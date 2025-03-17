@@ -1,0 +1,376 @@
+.pack-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.pack {
+  width: 300px;
+  height: 400px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: packShake 1s ease-in-out;
+}
+
+.pack-front,
+.pack-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.pack-front {
+  background: linear-gradient(135deg, #16d0ca, #0ef056);
+  z-index: 2;
+  overflow: hidden;
+}
+
+.pack-back {
+  background: white;
+  z-index: 1;
+}
+
+.pack-front::before {
+  content: "";
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+.pack-logo {
+  width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  z-index: 3;
+}
+
+.pack-text {
+  position: absolute;
+  bottom: 30px;
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  z-index: 3;
+}
+
+.pack-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shine 1.5s infinite;
+  z-index: 2;
+}
+
+.pack-card {
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  background: white;
+  border-radius: 10px;
+  transform: scale(0);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.pack-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pack-card-rarity {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.tear-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.tear-left,
+.tear-right {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(135deg, #16d0ca, #0ef056);
+  overflow: hidden;
+}
+
+.tear-left {
+  left: 0;
+  border-radius: 15px 0 0 15px;
+  transform-origin: right center;
+}
+
+.tear-right {
+  right: 0;
+  border-radius: 0 15px 15px 0;
+  transform-origin: left center;
+}
+
+.tear-content-left {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(135deg, #16d0ca, #0ef056);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: 0;
+}
+
+.tear-content-right {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(135deg, #16d0ca, #0ef056);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  right: 0;
+}
+
+.tear-content-left::before,
+.tear-content-right::before {
+  content: "";
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+.tear-open-left {
+  animation: tearLeft 0.8s forwards;
+}
+
+.tear-open-right {
+  animation: tearRight 0.8s forwards;
+}
+
+.card-reveal {
+  animation: revealCard 0.7s 0.8s forwards;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #f00;
+  opacity: 0;
+  z-index: 1001;
+}
+
+.pack-counter {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  z-index: 1002;
+}
+
+.pack-instructions {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  z-index: 1002;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.05);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes packShake {
+  0%,
+  100% {
+    transform: translateY(0) rotateZ(0);
+  }
+  25% {
+    transform: translateY(-10px) rotateZ(-5deg);
+  }
+  50% {
+    transform: translateY(0) rotateZ(0);
+  }
+  75% {
+    transform: translateY(-5px) rotateZ(5deg);
+  }
+}
+
+@keyframes tearLeft {
+  0% {
+    transform: translateX(0) rotateY(0);
+  }
+  100% {
+    transform: translateX(-100%) rotateY(30deg);
+  }
+}
+
+@keyframes tearRight {
+  0% {
+    transform: translateX(0) rotateY(0);
+  }
+  100% {
+    transform: translateX(100%) rotateY(-30deg);
+  }
+}
+
+@keyframes revealCard {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(1000px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+  .pack {
+    width: 250px;
+    height: 350px;
+  }
+
+  .pack-text {
+    font-size: 20px;
+    bottom: 20px;
+  }
+
+  .pack-instructions {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+/* Efeito de hover no pacote */
+.pack:hover {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+/* Efeito de clique no pacote */
+.pack:active {
+  transform: scale(0.98);
+}
+
+/* Efeito de brilho para raridades especiais */
+.pack-card-rarity[style*="background-color: #9C27B0"],
+.pack-card-rarity[style*="background-color: #FFD700"] {
+  animation: rarityGlow 1.5s infinite alternate;
+}
+
+@keyframes rarityGlow {
+  from {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px currentColor;
+  }
+}
+
+/* Efeito de partículas para raridades especiais */
+.particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0;
+  z-index: 1001;
+}
+
+@keyframes particleEmit {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x, 50px), var(--y, 50px));
+    opacity: 0;
+  }
+}

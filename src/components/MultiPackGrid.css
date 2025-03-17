@@ -1,0 +1,857 @@
+.multi-pack-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 10px;
+  max-width: 80vw;
+  margin: 0 auto;
+}
+
+.mini-pack {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  transform-style: preserve-3d;
+  margin: 0 auto;
+  cursor: pointer;
+  perspective: 1000px;
+}
+
+.mini-pack-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #16d0ca, #0ef056);
+  backface-visibility: hidden;
+  transition: transform 0.8s;
+  overflow: hidden;
+}
+
+.mini-pack-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  backface-visibility: hidden;
+  transform: rotateY(180deg);
+  transition: transform 0.8s;
+  background: transparent;
+  overflow: hidden;
+}
+
+.mini-pack-back[data-rarity="Comum"] {
+  background: linear-gradient(135deg, #808080 0%, #a9a9a9 50%, #696969 100%);
+  animation: gradientCommon 8s ease infinite;
+  background-size: 200% 200%;
+  box-shadow: 0 5px 15px rgba(128, 128, 128, 0.4);
+}
+
+.mini-pack-back[data-rarity="Incomum"] {
+  background: linear-gradient(135deg, #2e8b57 0%, #3cb371 50%, #2e8b57 100%);
+  animation: gradientUncommon 8s ease infinite;
+  background-size: 200% 200%;
+  box-shadow: 0 5px 15px rgba(46, 139, 87, 0.4);
+}
+
+.mini-pack-back[data-rarity="Raro"] {
+  background: linear-gradient(135deg, #4169e1 0%, #1e90ff 50%, #0000cd 100%);
+  animation: gradientRare 8s ease infinite;
+  background-size: 200% 200%;
+  box-shadow: 0 5px 15px rgba(65, 105, 225, 0.4);
+}
+
+.mini-pack-back[data-rarity="Épico"] {
+  background: linear-gradient(135deg, #8a2be2 0%, #9370db 50%, #6a0dad 100%);
+  animation: gradientEpic 6s ease infinite;
+  background-size: 200% 200%;
+  box-shadow: 0 5px 15px rgba(138, 43, 226, 0.5);
+}
+
+.mini-pack-back[data-rarity="Lendário"] {
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 50%, #daa520 100%);
+  animation: gradientLegendary 4s ease infinite;
+  background-size: 200% 200%;
+  box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+}
+
+.mini-pack-back::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 15px;
+  z-index: -1;
+}
+
+.mini-pack-card {
+  width: 90%;
+  height: 90%;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  background-color: #333;
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+.mini-pack-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-pack-rarity {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.mini-pack-logo {
+  width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+  z-index: 3;
+}
+
+.mini-pack-text {
+  position: absolute;
+  bottom: 20px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  z-index: 3;
+}
+
+.mini-pack-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shine 1.5s infinite;
+  z-index: 2;
+}
+
+.mini-pack-front::before {
+  content: "";
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.mini-pack-flipped .mini-pack-front {
+  transform: rotateY(180deg);
+}
+
+.mini-pack-flipped .mini-pack-back {
+  transform: rotateY(0deg);
+}
+
+.grid-controls {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0 30px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.grid-controls button {
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  min-width: 180px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 1;
+  border: none;
+  color: white;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.grid-controls button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0)
+  );
+  border-radius: 12px 12px 24px 24px;
+  z-index: -1;
+}
+
+#flip-all-btn {
+  background: linear-gradient(135deg, #7b68ee 0%, #483d8b 100%);
+  box-shadow: 0 6px 15px rgba(123, 104, 238, 0.3),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+}
+
+#flip-all-btn::before {
+  content: "✨";
+  font-size: 20px;
+}
+
+#flip-all-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(123, 104, 238, 0.4),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #9370db 0%, #5e4fc1 100%);
+}
+
+#flip-all-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 10px rgba(123, 104, 238, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+#collect-all-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+  box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+}
+
+#collect-all-btn::before {
+  content: "🧺";
+  font-size: 20px;
+}
+
+#collect-all-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(76, 175, 80, 0.4),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #66bb6a 0%, #388e3c 100%);
+}
+
+#collect-all-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: ripple 0.8s linear;
+  pointer-events: none;
+}
+
+.grid-controls button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .grid-controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .grid-controls button {
+    width: 85%;
+    max-width: 280px;
+    font-size: 15px;
+    padding: 12px 20px;
+  }
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Animação para os pacotes */
+.mini-pack {
+  animation: packShake 3s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.2s);
+}
+
+@keyframes packShake {
+  0%,
+  100% {
+    transform: translateY(0) rotateZ(0);
+  }
+  25% {
+    transform: translateY(-5px) rotateZ(-2deg);
+  }
+  50% {
+    transform: translateY(0) rotateZ(0);
+  }
+  75% {
+    transform: translateY(-3px) rotateZ(2deg);
+  }
+}
+
+/* Efeito de hover nos pacotes */
+.mini-pack:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+/* Efeito de clique nos pacotes */
+.mini-pack:active {
+  transform: scale(0.95);
+}
+
+/* Estilo para pacotes já coletados */
+.mini-pack.collected {
+  opacity: 0.7;
+}
+
+/* Título da grade */
+.grid-title {
+  color: white;
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Contador de pacotes */
+.grid-counter {
+  color: white;
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 10px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Botão de fechar */
+.grid-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.3s ease;
+}
+
+.grid-close:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Efeito de brilho para cards de raridade alta */
+.mini-pack-back[data-rarity="Comum"] .mini-pack-card {
+  box-shadow: 0 0 15px rgba(169, 169, 169, 0.6);
+}
+
+.mini-pack-back[data-rarity="Incomum"] .mini-pack-card {
+  box-shadow: 0 0 15px rgba(60, 179, 113, 0.6);
+}
+
+.mini-pack-back[data-rarity="Raro"] .mini-pack-card {
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
+}
+
+.mini-pack-back[data-rarity="Épico"] .mini-pack-card {
+  box-shadow: 0 0 20px rgba(147, 112, 219, 0.7);
+}
+
+.mini-pack-back[data-rarity="Lendário"] .mini-pack-card {
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+}
+
+/* Efeito de borda para cards lendários */
+.mini-pack-back[data-rarity="Lendário"] .mini-pack-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  padding: 2px;
+  background: linear-gradient(45deg, #ffd700, #ffa500, #daa520, #ffa500);
+  background-size: 400% 400%;
+  animation: borderRotate 3s linear infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}
+
+/* Efeito de borda para cards épicos */
+.mini-pack-back[data-rarity="Épico"] .mini-pack-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  padding: 2px;
+  background: linear-gradient(45deg, #8a2be2, #9370db, #6a0dad, #9370db);
+  background-size: 400% 400%;
+  animation: borderRotate 4s linear infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0.7;
+}
+
+@keyframes borderRotate {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 300% 0%;
+  }
+}
+
+/* Efeito de brilho rotativo para cards de raridade alta */
+.mini-pack-back[data-rarity="Épico"]::before,
+.mini-pack-back[data-rarity="Lendário"]::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 60%
+  );
+  transform: rotate(45deg);
+  animation: shineEffect 3s infinite linear;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes shineEffect {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Efeito de partículas para cards lendários */
+.mini-pack-back[data-rarity="Lendário"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 215, 0, 0.5) 1px,
+      transparent 1px
+    ),
+    radial-gradient(circle, rgba(255, 165, 0, 0.3) 1px, transparent 1px);
+  background-size: 20px 20px, 30px 30px;
+  background-position: 0 0, 10px 10px;
+  animation: particleFloat 10s infinite linear;
+  border-radius: 15px;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+@keyframes particleFloat {
+  0% {
+    background-position: 0 0, 10px 10px;
+  }
+  100% {
+    background-position: 50px 50px, 60px 60px;
+  }
+}
+
+/* Animações de gradiente para cada raridade */
+@keyframes gradientCommon {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradientUncommon {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradientRare {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradientEpic {
+  0% {
+    background-position: 0% 30%;
+  }
+  50% {
+    background-position: 100% 70%;
+  }
+  100% {
+    background-position: 0% 30%;
+  }
+}
+
+@keyframes gradientLegendary {
+  0% {
+    background-position: 0% 30%;
+  }
+  25% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 100% 70%;
+  }
+  75% {
+    background-position: 50% 50%;
+  }
+  100% {
+    background-position: 0% 30%;
+  }
+}
+
+/* Efeito de pulso para cards raros */
+@keyframes pulseShadow {
+  0% {
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(30, 144, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
+  }
+}
+
+.mini-pack-back[data-rarity="Raro"] .mini-pack-card {
+  animation: pulseShadow 2s infinite;
+}
+
+/* Efeito de pulso mais intenso para cards épicos */
+@keyframes pulseEpicShadow {
+  0% {
+    box-shadow: 0 0 15px rgba(147, 112, 219, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(147, 112, 219, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(147, 112, 219, 0.6);
+  }
+}
+
+.mini-pack-back[data-rarity="Épico"] .mini-pack-card {
+  animation: pulseEpicShadow 2s infinite;
+}
+
+/* Efeito de pulso dourado para cards lendários */
+@keyframes pulseLegendaryShadow {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(255, 215, 0, 1);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+  }
+}
+
+.mini-pack-back[data-rarity="Lendário"] .mini-pack-card {
+  animation: pulseLegendaryShadow 1.5s infinite;
+}
+
+/* Efeitos de revelação para diferentes raridades */
+
+/* Efeito base para todos os pacotes ao revelar */
+.mini-pack.reveal-animation {
+  z-index: 10;
+}
+
+/* Efeito de revelação para sapos comuns */
+.mini-pack.reveal-common .mini-pack-front {
+  transform: rotateY(180deg);
+  box-shadow: 0 0 20px rgba(169, 169, 169, 0.8);
+}
+
+.mini-pack.reveal-common .mini-pack-back {
+  transform: rotateY(0deg);
+}
+
+/* Efeito de revelação para sapos incomuns */
+.mini-pack.reveal-uncommon .mini-pack-front {
+  transform: rotateY(180deg) scale(0.8);
+  box-shadow: 0 0 30px rgba(60, 179, 113, 0.8);
+}
+
+.mini-pack.reveal-uncommon .mini-pack-back {
+  transform: rotateY(0deg) scale(1.05);
+}
+
+/* Efeito de revelação para sapos raros */
+.mini-pack.reveal-rare .mini-pack-front {
+  transform: rotateY(180deg) scale(0.7);
+  box-shadow: 0 0 40px rgba(30, 144, 255, 0.9);
+}
+
+.mini-pack.reveal-rare .mini-pack-back {
+  transform: rotateY(0deg) scale(1.1);
+}
+
+/* Efeito de revelação para sapos épicos */
+.mini-pack.reveal-epic .mini-pack-front {
+  transform: rotateY(180deg) scale(0.6);
+  box-shadow: 0 0 50px rgba(147, 112, 219, 1);
+}
+
+.mini-pack.reveal-epic .mini-pack-back {
+  transform: rotateY(0deg) scale(1.15);
+}
+
+/* Efeito de revelação para sapos lendários */
+.mini-pack.reveal-legendary .mini-pack-front {
+  transform: rotateY(180deg) scale(0.5);
+  box-shadow: 0 0 60px rgba(255, 215, 0, 1);
+}
+
+.mini-pack.reveal-legendary .mini-pack-back {
+  transform: rotateY(0deg) scale(1.2);
+}
+
+/* Efeito de explosão para sapos lendários */
+@keyframes legendaryExplosion {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.8);
+    background: radial-gradient(
+      circle,
+      rgba(255, 215, 0, 0.8) 0%,
+      transparent 0%
+    );
+  }
+  70% {
+    box-shadow: 0 0 100px 70px rgba(255, 215, 0, 0);
+    background: radial-gradient(
+      circle,
+      rgba(255, 215, 0, 0) 70%,
+      transparent 70%
+    );
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+    background: radial-gradient(
+      circle,
+      rgba(255, 215, 0, 0) 0%,
+      transparent 0%
+    );
+  }
+}
+
+.legendary-explosion {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 5;
+  animation: legendaryExplosion 1s forwards;
+}
+
+/* Efeito de ondas para sapos épicos */
+@keyframes epicWaves {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 112, 219, 0.8);
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 112, 219, 0);
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+.epic-wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(147, 112, 219, 0.8);
+  z-index: 5;
+  animation: epicWaves 1.5s forwards;
+}
+
+/* Efeito de brilho para sapos raros */
+@keyframes rareGlow {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+.rare-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle,
+    rgba(30, 144, 255, 0.6) 0%,
+    transparent 70%
+  );
+  border-radius: 15px;
+  z-index: 5;
+  animation: rareGlow 1.5s forwards;
+}
+
+/* Efeito de folhas para sapos incomuns */
+@keyframes leafFall {
+  0% {
+    transform: translate(0, -20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--leaf-x), 120px) rotate(var(--leaf-rotate));
+    opacity: 0;
+  }
+}
+
+.uncommon-leaf {
+  position: absolute;
+  top: -20px;
+  width: 15px;
+  height: 15px;
+  background-color: rgba(60, 179, 113, 0.8);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  z-index: 5;
+  animation: leafFall 2s forwards;
+}
+
+/* Efeito de poeira para sapos comuns */
+@keyframes dustParticle {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(var(--dust-x), var(--dust-y))
+      rotate(var(--dust-rotate));
+    opacity: 0;
+  }
+}
+
+.common-dust {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: rgba(169, 169, 169, 0.8);
+  border-radius: 50%;
+  z-index: 5;
+  animation: dustParticle 1.5s forwards;
+}

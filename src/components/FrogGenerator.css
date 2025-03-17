@@ -1,0 +1,641 @@
+.frog-generator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.frog-container {
+  position: relative;
+  margin-top: 1rem;
+  width: 20em;
+  height: 20em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.animal {
+  width: 20em;
+  height: 20em;
+  border-radius: 15px;
+  transition: all 0.5s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.multi-pack-options {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 25px 0;
+  flex-wrap: wrap;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.multi-pack-btn {
+  background: linear-gradient(135deg, #333333 0%, #222222 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  min-width: 150px;
+  text-align: center;
+}
+
+.multi-pack-btn:first-child {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+}
+
+.multi-pack-btn:nth-child(2) {
+  background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+  box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+}
+
+.multi-pack-btn:nth-child(3) {
+  background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
+  box-shadow: 0 4px 10px rgba(156, 39, 176, 0.3);
+}
+
+.multi-pack-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.multi-pack-btn:hover::before {
+  left: 100%;
+}
+
+.multi-pack-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.multi-pack-btn:first-child:hover {
+  box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+}
+
+.multi-pack-btn:nth-child(2):hover {
+  box-shadow: 0 6px 15px rgba(33, 150, 243, 0.4);
+}
+
+.multi-pack-btn:nth-child(3):hover {
+  box-shadow: 0 6px 15px rgba(156, 39, 176, 0.4);
+}
+
+.multi-pack-btn:active {
+  transform: translateY(1px);
+}
+
+.multi-pack-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.multi-pack-btn::after {
+  content: "🎁";
+  margin-left: 8px;
+  font-size: 16px;
+}
+
+.multi-pack-btn:nth-child(2)::after {
+  content: "🎁🎁";
+  font-size: 14px;
+}
+
+.multi-pack-btn:nth-child(3)::after {
+  content: "🎁🎁🎁";
+  font-size: 12px;
+}
+
+.initial-pack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+.initial-pack .pack {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.initial-pack .pack-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #16d0ca, #0ef056);
+  overflow: hidden;
+}
+
+.initial-pack .pack-front::before {
+  content: "";
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+.initial-pack .pack-logo {
+  width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  z-index: 3;
+}
+
+.initial-pack .pack-text {
+  position: absolute;
+  bottom: 30px;
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  z-index: 3;
+}
+
+.initial-pack .pack-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shine 1.5s infinite;
+  z-index: 2;
+}
+
+@keyframes packShake {
+  0%,
+  100% {
+    transform: translateY(0) rotateZ(0);
+  }
+  25% {
+    transform: translateY(-10px) rotateZ(-5deg);
+  }
+  50% {
+    transform: translateY(0) rotateZ(0);
+  }
+  75% {
+    transform: translateY(-5px) rotateZ(5deg);
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.loading {
+  font-size: 24px;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Estilo premium para o botão de gerar sapo com centralização garantida */
+.generate-frog-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 15px;
+  padding: 16px 30px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
+  overflow: hidden;
+  z-index: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+
+  /* Centralização corrigida */
+  display: block;
+  width: 240px;
+  margin: 25px auto;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Container para garantir alinhamento consistente */
+.button-container {
+  position: relative;
+
+  margin: 25px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Efeito de brilho interno */
+.generate-frog-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0)
+  );
+  border-radius: 15px 15px 100px 100px / 15px 15px 30px 30px;
+  z-index: -1;
+}
+
+/* Efeito de partículas douradas */
+.generate-frog-btn::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 215, 0, 0.3) 2px,
+      transparent 2px
+    ),
+    radial-gradient(circle, rgba(255, 215, 0, 0.2) 1px, transparent 1px);
+  background-size: 18px 18px, 12px 12px;
+  background-position: 0 0, 6px 6px;
+  z-index: -1;
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+
+/* Ícone de sapo antes do texto */
+.generate-frog-btn-text {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.generate-frog-btn-text::before {
+  content: "🐸";
+  font-size: 22px;
+  margin-right: 10px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Efeito hover ajustado para manter centralização */
+.generate-frog-btn:hover {
+  transform: translateX(-50%) translateY(-4px);
+  box-shadow: 0 15px 30px rgba(255, 215, 0, 0.5),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #ffdf00 0%, #ffa500 100%);
+}
+
+.generate-frog-btn:hover::after {
+  opacity: 0.4;
+}
+
+/* Efeito active ajustado para manter centralização */
+.generate-frog-btn:active {
+  transform: translateX(-50%) translateY(2px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Efeito de ondulação ao clicar */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: scale(0);
+  animation: ripple 0.8s linear;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Efeito de brilho pulsante */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 215, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+}
+
+.generate-frog-btn:not(:disabled) {
+  animation: pulse 2s infinite;
+}
+
+/* Estado de carregamento ajustado para manter centralização */
+.generate-frog-btn:disabled {
+  background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+  animation: none;
+  cursor: not-allowed;
+  transform: translateX(-50%);
+}
+
+.generate-frog-btn.disabled:hover {
+  transform: translateX(-50%);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Animação de carregamento */
+.generate-frog-btn:disabled .loading-dots::after {
+  content: "";
+  animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+  100% {
+    content: "";
+  }
+}
+
+/* Estilo aprimorado para o contador de sapos */
+#frogCount {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.8) 0%,
+    rgba(50, 50, 50, 0.8) 100%
+  );
+  color: white;
+  padding: 12px 25px;
+  border-radius: 15px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  margin: 25px auto 15px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  min-width: 200px;
+}
+
+/* Ícone de sapo antes do texto */
+#frogCount::before {
+  content: "🐸";
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+/* Destaque para o número */
+#frogCount span {
+  background: linear-gradient(to right, #ffd700, #ffa500);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  font-size: 18px;
+  margin-left: 5px;
+}
+
+/* Efeito de brilho no contador */
+#frogCount::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 60%
+  );
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+/* Container para centralizar o contador */
+.frog-count-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Animação para quando o contador aumenta */
+@keyframes countIncrease {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.count-increase {
+  animation: countIncrease 0.5s ease;
+}
+
+/* Estilos para o contador diário e timer */
+.daily-limit-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 15px auto;
+  padding: 10px 15px;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.8) 0%,
+    rgba(50, 50, 50, 0.8) 100%
+  );
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: white;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  max-width: 300px;
+  width: 100%;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.daily-counter {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.daily-counter span:last-child {
+  font-weight: 600;
+  color: #4caf50;
+}
+
+.daily-counter .limit-reached {
+  color: #ff5252;
+}
+
+.reset-timer {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.timer-value {
+  font-weight: 600;
+  color: #ffc107;
+  font-family: "Courier New", monospace;
+  letter-spacing: 1px;
+}
+
+/* Animação pulsante para o timer */
+@keyframes timerPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.timer-value {
+  animation: timerPulse 2s infinite;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .daily-limit-info {
+    font-size: 13px;
+    padding: 8px 12px;
+    max-width: 280px;
+  }
+
+  .reset-timer {
+    font-size: 12px;
+  }
+
+  .generate-frog-btn {
+    width: 85%;
+    max-width: 280px;
+    font-size: 16px;
+    padding: 14px 24px;
+  }
+}
