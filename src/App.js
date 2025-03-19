@@ -331,19 +331,7 @@ function App() {
           // Extrair o ID da imagem
           const imageId = extractImageId(imageUrl);
 
-          // Verificar se o sapo já existe na coleção
-          const existingFrog = frogCollection.find(
-            (frog) => extractImageId(frog.imageUrl) === imageId
-          );
-
-          if (existingFrog) {
-            // Se já existe, tentar outra imagem
-            console.log("Sapo duplicado encontrado, tentando outra imagem...");
-            i--; // Tentar novamente este índice
-            continue;
-          }
-
-          // IMPORTANTE: Usar o getRarity em vez de getFixedRarityFromId para respeitar boosts e garantias
+          // Determinar a raridade
           let finalRarity;
 
           if (guaranteedMinRarity === "Épico") {
@@ -359,11 +347,26 @@ function App() {
             console.log(`Sapo garantido com raridade: ${finalRarity.name}`);
           } else {
             // Para outros pacotes, aplicar o boost de raridade
-            // Configurar objeto simulado para getRarity
             finalRarity = getRarityWithBoost(rarityBoost);
             console.log(
               `Sapo gerado com boost ${rarityBoost}, raridade: ${finalRarity.name}`
             );
+          }
+
+          // Verificar se o sapo já existe na coleção COM ESTA RARIDADE ESPECÍFICA
+          const existingFrog = frogCollection.find(
+            (frog) =>
+              extractImageId(frog.imageUrl) === imageId &&
+              frog.rarity === finalRarity.name
+          );
+
+          if (existingFrog) {
+            // Se já existe com esta raridade, tentar outro sapo
+            console.log(
+              "Sapo com esta imagem e raridade já existe na coleção, tentando outra imagem..."
+            );
+            i--; // Tentar novamente este índice
+            continue;
           }
 
           if (count === 1) {
@@ -382,27 +385,21 @@ function App() {
         }
       }
 
+      // IMPORTANTE: Primeiro definir os pacotes, depois mostrar o grid
       if (count > 1 && newGridPacks.length > 0) {
-        // Primeiro, esconda qualquer MultiPackGrid que possa estar aberto
-        setShowMultiPackGrid(false);
+        console.log(
+          `MultiPackGrid configurado com ${newGridPacks.length} sapos`
+        );
+        setGridPacks(newGridPacks);
 
-        // Em seguida, defina os novos pacotes
-        setGridPacks([]);
-
-        // Pequeno atraso para garantir que o estado foi atualizado
+        // Usar setTimeout para garantir que gridPacks foi atualizado antes de mostrar o modal
         setTimeout(() => {
-          console.log("Definindo novos pacotes:", newGridPacks.length);
-          setGridPacks(newGridPacks);
-
-          // Outro pequeno atraso antes de mostrar o grid
-          setTimeout(() => {
-            console.log("Mostrando MultiPackGrid...");
-            setShowMultiPackGrid(true);
-          }, 100);
+          console.log("Mostrando MultiPackGrid...");
+          setShowMultiPackGrid(true);
         }, 100);
       }
 
-      // NÃO limpar as configurações aqui - mover para depois que os sapos forem salvos
+      // NÃO limpar as configurações aqui
     } catch (error) {
       console.error("Erro:", error);
       // Limpar as configurações em caso de erro
