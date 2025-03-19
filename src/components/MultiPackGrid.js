@@ -10,6 +10,14 @@ const MultiPackGrid = ({
   playTearSound,
   playRareSound,
 }) => {
+  console.log("MultiPackGrid renderizado com:", {
+    numPacks: gridPacks.length,
+    packs: gridPacks.map((p) => ({
+      rarity: p.rarity.name,
+      url: p.imageUrl.substring(0, 30) + "...",
+    })),
+  });
+
   const [flippedPacks, setFlippedPacks] = useState([]);
   const [collectedPacks, setCollectedPacks] = useState([]);
 
@@ -36,9 +44,9 @@ const MultiPackGrid = ({
   const handleFlipPack = (index) => {
     if (flippedPacks.includes(index)) return;
 
-    // Play tear sound
-    if (playTearSound) {
-      playTearSound();
+    // Tocar som de abrir pacote
+    if (window.frogSoundSystem && window.frogSoundSystem.playPackOpenSound) {
+      window.frogSoundSystem.playPackOpenSound();
     }
 
     // Get fixed rarity for the pack
@@ -95,6 +103,13 @@ const MultiPackGrid = ({
 
     // Add to collection
     addFrogToCollection(pack.imageUrl, fixedRarity);
+
+    // Tocar som baseado na raridade após um pequeno atraso
+    setTimeout(() => {
+      if (window.frogSoundSystem && window.frogSoundSystem.playRaritySound) {
+        window.frogSoundSystem.playRaritySound(fixedRarity.name);
+      }
+    }, 500); // Pequeno atraso para dar tempo à animação de flip
   };
 
   // Funções para criar efeitos visuais baseados na raridade

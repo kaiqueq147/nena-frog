@@ -40,17 +40,25 @@ const PACK_TYPES = {
   },
 };
 
+// Criar um objeto global para funções de áudio
+window.frogSoundSystem = {
+  playRaritySound: null, // Será definido posteriormente
+  playPackOpenSound: null,
+  playCoinSound: null,
+};
+
 const FrogGenerator = ({
   onGenerateFrog,
   frogCount,
   showInitialPack,
   currentFrog,
-  loading,
+  loading: externalLoading, // Renomeado para evitar conflito
 }) => {
   // Estado para controlar as moedas
   const [coins, setCoins] = useState(1000); // Começar com 1000 moedas
   const [selectedPack, setSelectedPack] = useState("common");
   const [showPackSelection, setShowPackSelection] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Novo estado para controlar loading do botão
 
   // Carregar moedas do localStorage ao iniciar
   useEffect(() => {
@@ -58,16 +66,128 @@ const FrogGenerator = ({
     if (storedCoins) {
       setCoins(parseInt(storedCoins));
     }
+
+    // Tocar som de boas-vindas quando o componente montar (som de sapo)
+    setTimeout(() => {
+      playSound("welcome-audio", 0.3);
+    }, 1000);
+
+    // Pré-carregar todos os sons para evitar atrasos
+    preloadAllSounds();
   }, []);
 
-  // Função para ganhar moedas (pode ser chamada periodicamente ou por ações do usuário)
+  // Função para pré-carregar todos os sons
+  const preloadAllSounds = () => {
+    const soundIds = [
+      "welcome-audio",
+      "coin-sound",
+      "pack-open-sound",
+      "common-audio",
+      "uncommon-audio",
+      "rare-audio",
+      "epic-audio",
+      "legendary-audio",
+    ];
+
+    soundIds.forEach((id) => {
+      const audio = document.getElementById(id);
+      if (audio) {
+        audio.load();
+      }
+    });
+  };
+
+  // Função para tocar som
+  const playSound = (id, volume = 0.5) => {
+    try {
+      // Pausar todos os sons primeiro (opcional - você pode querer remover isso para MultiPackGrid)
+      const allAudios = document.querySelectorAll("audio");
+      allAudios.forEach((audio) => {
+        if (audio.id !== id) {
+          // Não interromper o som que queremos tocar
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+
+      const audio = document.getElementById(id);
+      if (audio) {
+        // Verificar se o áudio já está tocando
+        if (!audio.paused) {
+          // Clonar o elemento de áudio para permitir reprodução simultânea
+          const clone = audio.cloneNode(true);
+          clone.volume = volume;
+          clone
+            .play()
+            .catch((e) => console.error("Erro ao reproduzir som:", e));
+
+          // Remover o clone após a reprodução
+          clone.onended = () => {
+            if (clone.parentNode) {
+              clone.parentNode.removeChild(clone);
+            }
+          };
+
+          // Adicionar o clone ao DOM temporariamente
+          document.body.appendChild(clone);
+        } else {
+          audio.volume = volume;
+          audio
+            .play()
+            .catch((e) => console.error("Erro ao reproduzir som:", e));
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao tocar som:", error);
+    }
+  };
+
+  // Função para tocar som baseado na raridade
+  const playRaritySound = (rarityName) => {
+    switch (rarityName) {
+      case "Lendário":
+        playSound("legendary-audio", 0.6);
+        break;
+      case "Épico":
+        playSound("epic-audio", 0.5);
+        break;
+      case "Raro":
+        playSound("rare-audio", 0.5);
+        break;
+      case "Incomum":
+        playSound("uncommon-audio", 0.4);
+        break;
+      default:
+        playSound("common-audio", 0.3);
+    }
+  };
+
+  // Exportar as funções de som para o objeto global
+  useEffect(() => {
+    window.frogSoundSystem.playRaritySound = playRaritySound;
+    window.frogSoundSystem.playPackOpenSound = () =>
+      playSound("pack-open-sound");
+    window.frogSoundSystem.playCoinSound = () => playSound("coin-sound");
+
+    // Limpar as referências quando o componente for desmontado
+    return () => {
+      window.frogSoundSystem.playRaritySound = null;
+      window.frogSoundSystem.playPackOpenSound = null;
+      window.frogSoundSystem.playCoinSound = null;
+    };
+  }, []);
+
+  // Função para ganhar moedas com som
   const earnCoins = (amount) => {
     const newCoins = coins + amount;
     setCoins(newCoins);
     localStorage.setItem("frogGeneratorCoins", newCoins.toString());
+
+    // Tocar som de moeda
+    playSound("coin-sound");
   };
 
-  // Função para comprar e gerar sapos
+  // Função para comprar e gerar sapos com som
   const handleBuyAndGenerate = async (packType, count = 1) => {
     const pack = PACK_TYPES[packType];
     const totalCost = pack.price * count;
@@ -79,6 +199,12 @@ const FrogGenerator = ({
       );
       return;
     }
+
+    // Ativar o loading
+    setIsLoading(true);
+
+    // Tocar som de abrir pacote
+    playSound("pack-open-sound");
 
     // Reduzir as moedas
     const newCoins = coins - totalCost;
@@ -96,11 +222,19 @@ const FrogGenerator = ({
       localStorage.removeItem("guaranteedMinRarity");
     }
 
-    // Usar a função onGenerateFrog existente com a contagem de sapos
-    await onGenerateFrog(count);
+    try {
+      // Usar a função onGenerateFrog existente com a contagem de sapos
+      await onGenerateFrog(count);
+    } catch (error) {
+      console.error("Erro ao gerar sapos:", error);
+      alert("Ocorreu um erro ao gerar sapos. Tente novamente.");
+    } finally {
+      // Desativar o loading mesmo se ocorrer um erro
+      setIsLoading(false);
 
-    // Após abrir pacote, esconder a seleção
-    setShowPackSelection(false);
+      // Após abrir pacote, esconder a seleção
+      setShowPackSelection(false);
+    }
   };
 
   // Funções para mostrar/esconder a seleção de pacotes
@@ -131,6 +265,16 @@ const FrogGenerator = ({
       ripple.remove();
     }, 800);
   };
+
+  // Efeito para tocar o som quando um novo sapo é exibido
+  useEffect(() => {
+    if (currentFrog && currentFrog.rarity) {
+      // Pequeno atraso para garantir que o som toque após a animação do sapo
+      setTimeout(() => {
+        playRaritySound(currentFrog.rarity.name);
+      }, 500);
+    }
+  }, [currentFrog]);
 
   return (
     <div className="frog-generator">
@@ -177,7 +321,7 @@ const FrogGenerator = ({
           </div>
         )}
 
-        {loading && (
+        {externalLoading && (
           <div className="loading-overlay">
             <div className="loading">Procurando sapo...</div>
           </div>
@@ -193,17 +337,21 @@ const FrogGenerator = ({
       {/* Botão principal para abrir seleção de pacotes */}
       <div className="button-container">
         <button
-          className="generate-frog-btn"
+          className={`generate-frog-btn ${
+            isLoading || externalLoading ? "loading" : ""
+          }`}
           onClick={(e) => {
-            addRippleEffect(e);
-            openPackSelection();
+            if (!isLoading && !externalLoading) {
+              addRippleEffect(e);
+              openPackSelection();
+            }
           }}
-          disabled={loading}
+          disabled={isLoading || externalLoading}
         >
           <span className="generate-frog-btn-text">
-            {loading ? (
+            {isLoading || externalLoading ? (
               <span>
-                Procurando<span className="loading-dots"></span>
+                Abrindo pacotes<span className="loading-dots"></span>
               </span>
             ) : (
               "Comprar Pacote"
@@ -224,10 +372,38 @@ const FrogGenerator = ({
                   key={type}
                   className={`pack-option ${
                     selectedPack === type ? "selected" : ""
-                  } ${coins < pack.price ? "disabled" : ""}`}
-                  onClick={() => coins >= pack.price && setSelectedPack(type)}
-                  style={{ borderColor: pack.color }}
+                  } ${coins < pack.price || isLoading ? "disabled" : ""}`}
+                  onClick={() =>
+                    !isLoading && coins >= pack.price && setSelectedPack(type)
+                  }
+                  style={{
+                    borderColor: pack.color,
+                    background: `linear-gradient(135deg, ${pack.color}40, ${pack.color}90)`,
+                  }}
                 >
+                  {/* Pacote estilizado com cor de fundo */}
+                  <div className="pack-visual-container">
+                    <div
+                      className="pack-visual"
+                      style={{
+                        backgroundColor: pack.color,
+                        backgroundImage: `linear-gradient(45deg, ${
+                          pack.color
+                        }, ${adjustColor(pack.color, 30)})`,
+                      }}
+                    >
+                      <div className="pack-visual-shine"></div>
+                      <img
+                        src="https://svg-files.pixelied.com/d75398af-665a-499e-ad17-11fea52c21aa/thumb-256px.png"
+                        alt="Logo"
+                        className="pack-visual-logo"
+                      />
+                      <div className="pack-stamp">
+                        {pack.name.split(" ")[1]}
+                      </div>
+                    </div>
+                  </div>
+
                   <h4 style={{ color: pack.color }}>{pack.name}</h4>
                   <p className="pack-description">{pack.description}</p>
                   <div className="pack-price">
@@ -240,33 +416,56 @@ const FrogGenerator = ({
 
             <div className="pack-quantity-selector">
               <button
-                className="quantity-btn"
+                className={`quantity-btn ${isLoading ? "loading" : ""}`}
                 onClick={() => handleBuyAndGenerate(selectedPack, 1)}
-                disabled={coins < PACK_TYPES[selectedPack].price}
+                disabled={coins < PACK_TYPES[selectedPack].price || isLoading}
               >
-                Comprar 1
+                {isLoading ? (
+                  <span>
+                    Abrindo<span className="loading-dots"></span>
+                  </span>
+                ) : (
+                  "Comprar 1"
+                )}
               </button>
               <button
-                className="quantity-btn"
+                className={`quantity-btn ${isLoading ? "loading" : ""}`}
                 onClick={() => handleBuyAndGenerate(selectedPack, 3)}
-                disabled={coins < PACK_TYPES[selectedPack].price * 3}
+                disabled={
+                  coins < PACK_TYPES[selectedPack].price * 3 || isLoading
+                }
               >
-                Comprar 3
+                {isLoading ? (
+                  <span>
+                    Abrindo<span className="loading-dots"></span>
+                  </span>
+                ) : (
+                  "Comprar 3"
+                )}
               </button>
               <button
-                className="quantity-btn"
+                className={`quantity-btn ${isLoading ? "loading" : ""}`}
                 onClick={() => handleBuyAndGenerate(selectedPack, 5)}
-                disabled={coins < PACK_TYPES[selectedPack].price * 5}
+                disabled={
+                  coins < PACK_TYPES[selectedPack].price * 5 || isLoading
+                }
               >
-                Comprar 5
+                {isLoading ? (
+                  <span>
+                    Abrindo<span className="loading-dots"></span>
+                  </span>
+                ) : (
+                  "Comprar 5"
+                )}
               </button>
             </div>
 
             <button
               className="close-selection-btn"
               onClick={closePackSelection}
+              disabled={isLoading}
             >
-              Cancelar
+              {isLoading ? "Abrindo pacotes..." : "Cancelar"}
             </button>
           </div>
         </div>
@@ -274,10 +473,16 @@ const FrogGenerator = ({
 
       {/* Botão para ganhar moedas (diariamente ou por assistir anúncios) */}
       <div className="earn-coins-container">
-        <button className="earn-coins-btn daily" onClick={() => earnCoins(100)}>
+        <button
+          className="earn-coins-btn daily"
+          onClick={() => earnCoins(10000)}
+        >
           <span className="coin-icon-small">🪙</span> +100 Diárias
         </button>
-        <button className="earn-coins-btn ad" onClick={() => earnCoins(50)}>
+        <button
+          className="earn-coins-btn ad"
+          onClick={() => alert("Não desbloqueou não")}
+        >
           <span className="coin-icon-small">🪙</span> +9999 Desbloquear o kaique
         </button>
       </div>
@@ -285,8 +490,97 @@ const FrogGenerator = ({
       <p id="frogCount" style={{ color: "white", marginTop: "10px" }}>
         Sapos encontrados: {frogCount}
       </p>
+
+      {/* Elementos de áudio */}
+      <audio
+        id="welcome-audio"
+        src="https://freesound.org/data/previews/349/349549_5121236-lq.mp3" // Som de sapo inicial
+        preload="auto"
+      ></audio>
+      <audio
+        id="coin-sound"
+        src="https://freesound.org/data/previews/256/256113_3263906-lq.mp3" // Som de moeda
+        preload="auto"
+      ></audio>
+      <audio
+        id="pack-open-sound"
+        src="https://freesound.org/data/previews/411/411642_5121236-lq.mp3" // Som de abrir pacote
+        preload="auto"
+      ></audio>
+      <audio
+        id="common-audio"
+        src="https://freesound.org/data/previews/35/35304_62844-lq.mp3" // Som comum
+        preload="auto"
+      ></audio>
+      <audio
+        id="uncommon-audio"
+        src="https://freesound.org/data/previews/80/80921_1022651-lq.mp3" // Som incomum
+        preload="auto"
+      ></audio>
+      <audio
+        id="rare-audio"
+        src="https://freesound.org/data/previews/320/320181_5260872-lq.mp3" // Som raro
+        preload="auto"
+      ></audio>
+      <audio
+        id="epic-audio"
+        src="https://cdn.freesound.org/previews/793/793399_17068324-lq.mp3" // Som épico
+        preload="auto"
+      ></audio>
+      <audio
+        id="legendary-audio"
+        src="https://freesound.org/data/previews/387/387232_7255534-lq.mp3" // Som lendário
+        preload="auto"
+      ></audio>
+
+      {/* Adicione CSS para animação de loading (pontos) */}
+      <style>
+        {`
+          .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+          }
+          
+          @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+          }
+          
+          .quantity-btn.loading,
+          .generate-frog-btn.loading {
+            background: linear-gradient(45deg, #6a6a6a, #9e9e9e);
+            cursor: not-allowed;
+          }
+        `}
+      </style>
     </div>
   );
 };
+
+// Função auxiliar para ajustar cores (torná-las mais claras ou escuras)
+function adjustColor(hex, percent) {
+  // Validar entrada
+  if (!hex || typeof hex !== "string") return hex;
+
+  // Remover # se presente
+  hex = hex.replace("#", "");
+
+  // Converter para RGB
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+
+  // Ajustar valores
+  r = Math.min(255, Math.max(0, r + percent));
+  g = Math.min(255, Math.max(0, g + percent));
+  b = Math.min(255, Math.max(0, b + percent));
+
+  // Converter de volta para hex
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
 
 export default FrogGenerator;

@@ -46,47 +46,31 @@ function App() {
 
   const loadCollection = () => {
     const saved = localStorage.getItem("frogCollection");
+    console.log("Tentando carregar coleção do localStorage");
     if (saved) {
-      const collection = JSON.parse(saved);
-      setFrogCollection(collection);
-      setFrogCount(collection.length);
+      try {
+        const collection = JSON.parse(saved);
+        console.log(
+          "Coleção carregada com sucesso:",
+          collection.length,
+          "sapos"
+        );
+        setFrogCollection(collection);
+        setFrogCount(collection.length);
+      } catch (error) {
+        console.error("Erro ao carregar a coleção:", error);
+        setFrogCollection([]);
+        setFrogCount(0);
+      }
+    } else {
+      console.log("Nenhuma coleção encontrada no localStorage");
     }
   };
 
   const saveCollection = (collection) => {
     localStorage.setItem("frogCollection", JSON.stringify(collection));
+    console.log("Coleção salva:", collection.length, "sapos");
     setFrogCollection(collection);
-  };
-
-  const addFrogToCollection = (imageUrl, rarity) => {
-    // Extract the ID from the image URL
-    const imageId = extractImageId(imageUrl);
-
-    // Check if the frog already exists in the collection
-    const existingFrogIndex = frogCollection.findIndex(
-      (frog) => extractImageId(frog.imageUrl) === imageId
-    );
-
-    // If the frog already exists, don't add it again
-    if (existingFrogIndex >= 0) {
-      return false;
-    }
-
-    // Add the frog to the collection with the fixed rarity
-    const newCollection = [
-      ...frogCollection,
-      {
-        imageUrl: imageUrl,
-        rarity: rarity.name,
-        class: rarity.class,
-        color: rarity.color,
-        date: new Date().toISOString(),
-      },
-    ];
-
-    saveCollection(newCollection);
-    setFrogCount(newCollection.length);
-    return true;
   };
 
   const extractImageId = (url) => {
@@ -117,6 +101,24 @@ function App() {
   };
 
   const getFixedRarityFromId = (id) => {
+    // Verificar se existe uma garantia de raridade mínima
+    const guaranteedMinRarity = localStorage.getItem("guaranteedMinRarity");
+
+    if (guaranteedMinRarity === "Épico") {
+      // Usar o ID para determinar entre Épico e Lendário de forma consistente
+      const numericValue = parseInt(
+        id.replace(/[^0-9]/g, "").slice(0, 8) || "0",
+        10
+      );
+      // Se o valor for múltiplo de 5, retorna Lendário (20% de chance), caso contrário Épico
+      if (numericValue % 5 === 0) {
+        return rarities.find((r) => r.name === "Lendário");
+      } else {
+        return rarities.find((r) => r.name === "Épico");
+      }
+    }
+
+    // Para outros casos, usar o algoritmo original
     const numericValue = parseInt(
       id.replace(/[^0-9]/g, "").slice(0, 8) || "0",
       10
@@ -304,11 +306,21 @@ function App() {
       setCurrentPackIndex(0);
       setTotalPacks(count);
 
+      // Verificar a garantia de raridade e o boost atual
+      const guaranteedMinRarity = localStorage.getItem("guaranteedMinRarity");
+      const rarityBoost = parseFloat(
+        localStorage.getItem("currentRarityBoost") || "1"
+      );
+
+      console.log("Gerando sapos com:", {
+        count,
+        guaranteedMinRarity,
+        rarityBoost,
+      });
+
       const newGridPacks = [];
 
       for (let i = 0; i < count; i++) {
-        // Obter a raridade computada pelas regras de garantia e boost
-        const rarity = getRarity();
         let imageUrl = await getFrogFromUnsplash();
 
         if (!imageUrl) {
@@ -316,16 +328,53 @@ function App() {
         }
 
         if (imageUrl) {
-          setFrogCount((prevCount) => prevCount + 1);
+          // Extrair o ID da imagem
+          const imageId = extractImageId(imageUrl);
+
+          // Verificar se o sapo já existe na coleção
+          const existingFrog = frogCollection.find(
+            (frog) => extractImageId(frog.imageUrl) === imageId
+          );
+
+          if (existingFrog) {
+            // Se já existe, tentar outra imagem
+            console.log("Sapo duplicado encontrado, tentando outra imagem...");
+            i--; // Tentar novamente este índice
+            continue;
+          }
+
+          // IMPORTANTE: Usar o getRarity em vez de getFixedRarityFromId para respeitar boosts e garantias
+          let finalRarity;
+
+          if (guaranteedMinRarity === "Épico") {
+            // Para pacotes lendários, forçar raridade épica ou lendária
+            const random = Math.random();
+            if (random < 0.7) {
+              // 70% chance de épico
+              finalRarity = rarities.find((r) => r.name === "Épico");
+            } else {
+              // 30% chance de lendário
+              finalRarity = rarities.find((r) => r.name === "Lendário");
+            }
+            console.log(`Sapo garantido com raridade: ${finalRarity.name}`);
+          } else {
+            // Para outros pacotes, aplicar o boost de raridade
+            // Configurar objeto simulado para getRarity
+            finalRarity = getRarityWithBoost(rarityBoost);
+            console.log(
+              `Sapo gerado com boost ${rarityBoost}, raridade: ${finalRarity.name}`
+            );
+          }
 
           if (count === 1) {
             // Show single pack animation
-            // Usar diretamente a raridade calculada por getRarity()
-            setPackData({ imageUrl, rarity: rarity });
+            setPackData({ imageUrl, rarity: finalRarity });
+            console.log(`Pack único configurado: ${finalRarity.name}`);
             setShowPack(true);
           } else {
-            // Add to grid packs com a raridade correta
-            newGridPacks.push({ imageUrl, rarity });
+            // Add to grid packs
+            console.log(`Adicionando ao grid: ${finalRarity.name}`);
+            newGridPacks.push({ imageUrl, rarity: finalRarity });
           }
         } else {
           console.error("Não foi possível encontrar imagens de sapos");
@@ -334,12 +383,75 @@ function App() {
       }
 
       if (count > 1 && newGridPacks.length > 0) {
-        setGridPacks(newGridPacks);
-        setShowMultiPackGrid(true);
+        // Primeiro, esconda qualquer MultiPackGrid que possa estar aberto
+        setShowMultiPackGrid(false);
+
+        // Em seguida, defina os novos pacotes
+        setGridPacks([]);
+
+        // Pequeno atraso para garantir que o estado foi atualizado
+        setTimeout(() => {
+          console.log("Definindo novos pacotes:", newGridPacks.length);
+          setGridPacks(newGridPacks);
+
+          // Outro pequeno atraso antes de mostrar o grid
+          setTimeout(() => {
+            console.log("Mostrando MultiPackGrid...");
+            setShowMultiPackGrid(true);
+          }, 100);
+        }, 100);
       }
+
+      // NÃO limpar as configurações aqui - mover para depois que os sapos forem salvos
     } catch (error) {
       console.error("Erro:", error);
+      // Limpar as configurações em caso de erro
+      localStorage.removeItem("currentRarityBoost");
+      localStorage.removeItem("guaranteedMinRarity");
     }
+  };
+
+  // Nova função que aplica o boost de raridade
+  const getRarityWithBoost = (boost) => {
+    // Ajustar as chances com base no boost
+    const adjustedRarities = rarities.map((rarity) => {
+      if (rarity.name === "Comum") {
+        // Diminuir a chance de comum conforme o boost aumenta
+        return {
+          ...rarity,
+          chance: Math.max(10, rarity.chance - (boost - 1) * 15),
+        };
+      } else if (rarity.name === "Incomum") {
+        // Manter incomum relativamente estável
+        return { ...rarity, chance: rarity.chance };
+      } else {
+        // Aumentar a chance de raridades altas
+        return {
+          ...rarity,
+          chance: rarity.chance * boost,
+        };
+      }
+    });
+
+    // Normalizar as chances para somar 100
+    const totalChance = adjustedRarities.reduce((sum, r) => sum + r.chance, 0);
+    const normalizedRarities = adjustedRarities.map((r) => ({
+      ...r,
+      chance: (r.chance / totalChance) * 100,
+    }));
+
+    // Usar as raridades ajustadas para determinar o resultado
+    const random = Math.random() * 100;
+    let cumulativeChance = 0;
+
+    for (const rarity of normalizedRarities) {
+      cumulativeChance += rarity.chance;
+      if (random <= cumulativeChance) {
+        return rarity;
+      }
+    }
+
+    return rarities[0]; // Fallback para comum
   };
 
   const handlePackOpened = (imageUrl, rarity) => {
@@ -362,6 +474,124 @@ function App() {
     setSelectedFrog(frog);
     setShowModal(true);
   };
+
+  const addFrogToCollection = (imageUrl, rarity) => {
+    // Extract the ID from the image URL
+    const imageId = extractImageId(imageUrl);
+
+    console.log("Tentando adicionar sapo à coleção:", {
+      id: imageId,
+      raridade: typeof rarity === "object" ? rarity.name : rarity,
+    });
+
+    // Check if the frog already exists in the collection
+    const existingFrogIndex = frogCollection.findIndex(
+      (frog) => extractImageId(frog.imageUrl) === imageId
+    );
+
+    // If the frog already exists, don't add it again
+    if (existingFrogIndex >= 0) {
+      console.log("Sapo já existe na coleção, não será adicionado novamente");
+      return false;
+    }
+
+    // Garanta que a raridade seja um objeto completo
+    let rarityObject = rarity;
+
+    // Se for uma string ou não tiver todas as propriedades necessárias
+    if (typeof rarity === "string" || !rarity.class || !rarity.color) {
+      const rarityName = typeof rarity === "string" ? rarity : rarity.name;
+      rarityObject = rarities.find((r) => r.name === rarityName);
+
+      if (!rarityObject) {
+        console.error("Raridade não encontrada:", rarityName);
+        rarityObject = rarities[0]; // Usar comum como fallback
+      }
+
+      console.log("Convertido raridade para objeto completo:", rarityObject);
+    }
+
+    // Add the frog to the collection with the fixed rarity
+    const newFrog = {
+      imageUrl: imageUrl,
+      rarity: rarityObject.name,
+      class: rarityObject.class,
+      color: rarityObject.color,
+      date: new Date().toISOString(),
+    };
+
+    console.log("Novo sapo a ser adicionado:", newFrog);
+
+    const newCollection = [...frogCollection, newFrog];
+
+    // Salvar explicitamente no localStorage
+    try {
+      localStorage.setItem("frogCollection", JSON.stringify(newCollection));
+      console.log(
+        "Coleção salva no localStorage com sucesso, total:",
+        newCollection.length
+      );
+    } catch (error) {
+      console.error("Erro ao salvar no localStorage:", error);
+      // Tentativa de fallback para coleção menor se for problema de espaço
+      if (error.name === "QuotaExceededError") {
+        try {
+          const limitedCollection = newCollection.slice(-200); // Limitar aos 200 mais recentes
+          localStorage.setItem(
+            "frogCollection",
+            JSON.stringify(limitedCollection)
+          );
+          console.log(
+            "Salvou versão limitada da coleção:",
+            limitedCollection.length
+          );
+          setFrogCollection(limitedCollection);
+          setFrogCount(limitedCollection.length);
+          return true;
+        } catch (e) {
+          console.error("Falha no fallback:", e);
+        }
+      }
+    }
+
+    // Atualizar o estado após o localStorage
+    setFrogCollection(newCollection);
+    setFrogCount(newCollection.length);
+
+    return true;
+  };
+
+  const setupMultiPackEvents = () => {
+    // Criar um evento personalizado para tocar sons quando um sapo é revelado no grid
+    const handlePackReveal = (event) => {
+      const { rarity } = event.detail;
+      if (window.frogSoundSystem && window.frogSoundSystem.playRaritySound) {
+        window.frogSoundSystem.playRaritySound(rarity);
+      }
+    };
+
+    // Adicionar o listener de evento
+    window.addEventListener("frogPackRevealed", handlePackReveal);
+
+    // Remover após um tempo (por exemplo, quando o MultiPackGrid é fechado)
+    setTimeout(() => {
+      window.removeEventListener("frogPackRevealed", handlePackReveal);
+    }, 5 * 60 * 1000); // 5 minutos, ajuste conforme necessário
+  };
+
+  // Adicione este useEffect para depurar o problema
+  useEffect(() => {
+    console.log("Estado do MultiPackGrid:", {
+      showMultiPackGrid,
+      numGridPacks: gridPacks.length,
+    });
+
+    if (showMultiPackGrid && gridPacks.length === 0) {
+      console.error(
+        "Tentando mostrar MultiPackGrid com lista de pacotes vazia!"
+      );
+    }
+  }, [showMultiPackGrid, gridPacks]);
 
   return (
     <div className="App">
@@ -410,7 +640,21 @@ function App() {
           packData={packData}
           currentPackIndex={currentPackIndex}
           totalPacks={totalPacks}
-          onPackOpened={handlePackOpened}
+          onPackOpened={(imageUrl, rarity) => {
+            console.log("Pack aberto com raridade:", rarity.name);
+
+            // Garantir que a raridade seja a mesma que foi definida no packData
+            const success = addFrogToCollection(imageUrl, rarity);
+
+            console.log("Sapo adicionado à coleção:", success);
+
+            // Limpar as configurações DEPOIS que o sapo for salvo
+            localStorage.removeItem("currentRarityBoost");
+            localStorage.removeItem("guaranteedMinRarity");
+
+            // Chamar o callback original
+            handlePackOpened(imageUrl, rarity);
+          }}
           addFrogToCollection={addFrogToCollection}
           getFixedRarityFromId={getFixedRarityFromId}
           extractImageId={extractImageId}
@@ -421,36 +665,61 @@ function App() {
         <FrogModal frog={selectedFrog} onClose={() => setShowModal(false)} />
       )}
 
-      {showMultiPackGrid && (
-        <MultiPackGrid
-          gridPacks={gridPacks}
-          onClose={() => setShowMultiPackGrid(false)}
-          addFrogToCollection={addFrogToCollection}
-          getFixedRarityFromId={getFixedRarityFromId}
-          extractImageId={extractImageId}
-        />
-      )}
+      {showMultiPackGrid && gridPacks.length > 0 ? (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.8)",
+            zIndex: 1000,
+          }}
+        >
+          <h2 style={{ color: "white", textAlign: "center" }}>
+            MultiPackGrid deveria aparecer aqui!
+          </h2>
+          <MultiPackGrid
+            gridPacks={gridPacks}
+            onClose={() => {
+              console.log("MultiPackGrid fechado");
 
-      <audio
-        id="audio"
-        src="https://od.lk/s/MjhfMzI5MDYxNjVf/frog-croaking-soundbible%20%28mp3cut.net%29.mp3"
-        type="audio/mp3"
-      ></audio>
-      <audio
-        id="pack-audio"
-        src="https://assets.mixkit.co/sfx/preview/mixkit-opening-a-soda-can-2355.mp3"
-        type="audio/mp3"
-      ></audio>
-      <audio
-        id="rare-audio"
-        src="https://assets.mixkit.co/sfx/preview/mixkit-magical-coin-win-1936.mp3"
-        type="audio/mp3"
-      ></audio>
-      <audio
-        id="tear-audio"
-        src="https://assets.mixkit.co/sfx/preview/mixkit-paper-rip-1376.mp3"
-        type="audio/mp3"
-      ></audio>
+              // Limpar as configurações
+              localStorage.removeItem("currentRarityBoost");
+              localStorage.removeItem("guaranteedMinRarity");
+
+              setShowMultiPackGrid(false);
+            }}
+            addFrogToCollection={(imageUrl, rarity) => {
+              console.log("Adicionando sapo do grid à coleção:", rarity.name);
+
+              // Tocar som baseado na raridade quando o usuário clica no sapo no grid
+              if (
+                window.frogSoundSystem &&
+                window.frogSoundSystem.playRaritySound
+              ) {
+                window.frogSoundSystem.playRaritySound(rarity.name);
+              }
+
+              // Adicionar à coleção
+              const success = addFrogToCollection(imageUrl, rarity);
+
+              console.log("Sapo adicionado à coleção:", success);
+
+              // Disparar evento informando que um sapo foi revelado
+              const event = new CustomEvent("frogPackRevealed", {
+                detail: { rarity: rarity.name },
+              });
+              window.dispatchEvent(event);
+
+              return success;
+            }}
+            getFixedRarityFromId={getFixedRarityFromId}
+            extractImageId={extractImageId}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

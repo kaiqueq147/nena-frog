@@ -704,7 +704,7 @@
   border-radius: 15px;
   padding: 25px;
   max-width: 90%;
-  width: 600px;
+
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -720,115 +720,296 @@
 }
 
 .pack-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  margin: 10px;
+  color: white;
 }
 
 .pack-option {
-  background: rgba(50, 50, 50, 0.5);
-  border: 2px solid transparent;
-  border-radius: 10px;
-  padding: 15px;
-  text-align: center;
+  width: 180px;
+  margin: 10px;
+  padding: 20px;
+  border-radius: 25px;
+  border: 3px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3),
+    inset 0 2px 10px rgba(255, 255, 255, 0.1);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(5px);
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4z' fill='rgba(255,255,255,0.1)' fill-rule='evenodd'/%3E%3C/svg%3E");
 }
 
-.pack-option:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+.pack-option::before {
+  content: "🎁";
+  font-size: 2.5em;
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  transform: rotate(-15deg);
+  filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+}
+
+.pack-option::after {
+  content: "🐸";
+  font-size: 1.8em;
+  position: absolute;
+  bottom: -10px;
+  left: -10px;
+  transform: rotate(15deg);
+  filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+}
+
+.pack-option:hover:not(.disabled) {
+  transform: translateY(-8px) scale(1.02) rotate(2deg);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4),
+    inset 0 2px 15px rgba(255, 255, 255, 0.2);
 }
 
 .pack-option.selected {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  background: rgba(60, 60, 60, 0.7);
+  transform: translateY(-8px) scale(1.08) rotate(-2deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
+    inset 0 2px 20px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2);
+  border-width: 4px;
+  animation: bounce 0.5s ease infinite alternate;
 }
 
-.pack-option.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+@keyframes bounce {
+  from {
+    transform: translateY(-8px) scale(1.08) rotate(-2deg);
+  }
+  to {
+    transform: translateY(-12px) scale(1.08) rotate(-2deg);
+  }
+}
+
+.pack-visual-container {
+  width: 100%;
+  margin-bottom: 10px;
+  perspective: 1000px;
+}
+
+.pack-visual {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.pack-option:hover:not(.disabled) .pack-visual {
+  transform: rotateY(10deg);
+}
+
+.pack-visual-shine {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.1) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite ease-in-out;
+}
+
+.pack-visual-logo {
+  width: 70px;
+  height: auto;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.pack-option:hover:not(.disabled) .pack-visual-logo {
+  transform: scale(1.1);
+}
+
+.pack-stamp {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 3px 8px;
+  border-radius: 10px;
+  color: black;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: rotate(-5deg);
+  z-index: 3;
 }
 
 .pack-option h4 {
-  margin: 0 0 10px;
+  margin: 10px 0 5px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: bold;
+  text-align: center;
 }
 
 .pack-description {
   font-size: 12px;
-  color: #cccccc;
-  margin-bottom: 10px;
+  text-align: center;
+  margin: 5px 0 10px;
+  color: rgba(255, 255, 255, 0.9);
   height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .pack-price {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 5px 10px;
-  border-radius: 15px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffd700;
-  font-weight: 700;
+  gap: 5px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 5px 10px;
+  border-radius: 15px;
+  margin-top: auto;
 }
 
+.coin-icon-small {
+  font-size: 14px;
+}
+
+/* Animação para o brilho dos pacotes */
+@keyframes shine {
+  0%,
+  100% {
+    left: -100%;
+    top: -100%;
+  }
+  50% {
+    left: 100%;
+    top: 100%;
+  }
+}
+
+/* Estilo específico para cada tier de pacote - adicionar no final do CSS */
+.pack-option[style*="A9A9A9"] .pack-visual {
+  /* Comum */
+  background-image: linear-gradient(135deg, #a9a9a9, #d3d3d3);
+}
+
+.pack-option[style*="3CB371"] .pack-visual {
+  /* Incomum */
+  background-image: linear-gradient(135deg, #3cb371, #66cdaa);
+}
+
+.pack-option[style*="4169E1"] .pack-visual {
+  /* Raro */
+  background-image: linear-gradient(135deg, #4169e1, #87cefa);
+}
+
+.pack-option[style*="9370DB"] .pack-visual {
+  /* Épico */
+  background-image: linear-gradient(135deg, #9370db, #ba55d3);
+}
+
+.pack-option[style*="FFD700"] .pack-visual {
+  /* Lendário */
+  background-image: linear-gradient(135deg, #ffd700, #ffa500);
+  animation: legendary-glow 3s infinite alternate;
+}
+
+@keyframes legendary-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5),
+      inset 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+      inset 0 0 10px rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Melhorar o visual dos botões de quantidade */
 .pack-quantity-selector {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-top: 15px;
+  width: 100%;
 }
 
 .quantity-btn {
-  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
   color: #1a1a1a;
   border: none;
-  border-radius: 8px;
-  padding: 10px 15px;
+  border-radius: 15px;
+  padding: 12px 20px;
   font-family: "Poppins", sans-serif;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 15px rgba(255, 215, 0, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
+  text-align: center;
+  min-width: 100px;
+  position: relative;
+  overflow: hidden;
 }
 
-.quantity-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(255, 215, 0, 0.3);
+.quantity-btn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 20px rgba(255, 215, 0, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #ffdf33 0%, #ffa333 100%);
 }
 
-.quantity-btn:disabled {
-  background: linear-gradient(135deg, #999999 0%, #666666 100%);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  opacity: 0.7;
+.quantity-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 5px 10px rgba(255, 215, 0, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
+/* Melhorar o botão de fechar */
 .close-selection-btn {
-  background: transparent;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+  margin-top: 20px;
+  background: linear-gradient(45deg, #8b0000, #ff0000);
+  border: none;
+  border-radius: 20px;
   padding: 10px 20px;
-  font-family: "Poppins", sans-serif;
-  font-weight: 500;
+  color: white;
+  font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
-  display: block;
-  margin: 0 auto;
 }
 
-.close-selection-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.close-selection-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #a00000, #ff3333);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.close-selection-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Botões para ganhar moedas */
@@ -899,5 +1080,59 @@
 @media (max-width: 480px) {
   .pack-options {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Adicione estas regras ao seu arquivo CSS */
+
+.quantity-btn.loading,
+.generate-frog-btn.loading {
+  background: linear-gradient(45deg, #6a6a6a, #9e9e9e);
+  position: relative;
+  overflow: hidden;
+  cursor: not-allowed;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.loading-dots:after {
+  content: ".";
+  animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: ".";
+  }
+  40% {
+    content: "..";
+  }
+  60% {
+    content: "...";
+  }
+  80%,
+  100% {
+    content: "";
+  }
+}
+
+.pack-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(70%);
+}
+
+/* Animação de pulso durante o loading */
+.quantity-btn.loading,
+.generate-frog-btn.loading {
+  animation: pulse 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
   }
 }
