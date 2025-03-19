@@ -574,3 +574,639 @@
     padding: 12px 20px;
   }
 }
+
+/* Estilo para o álbum de figurinhas */
+.album-container {
+  padding: 30px;
+  background: linear-gradient(
+    135deg,
+    #0d0d0d80 0%,
+    #2a2a2a80 50%,
+    #26420b6e 100%
+  );
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+    0 0 100px rgba(255, 255, 255, 0.1) inset;
+  max-width: 1200px;
+  margin: 20px auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  background-image: url("https://www.transparenttextures.com/patterns/leather.png");
+}
+
+.album-container::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.album-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  background: linear-gradient(to right, #ffffff, #cccccc, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.album-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+}
+
+/* Navegação do álbum */
+.album-navigation {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.album-tab {
+  padding: 10px 15px;
+  background-color: rgba(50, 50, 50, 0.5);
+  border: none;
+  border-radius: 8px 8px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.album-tab::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.album-tab:hover {
+  background-color: rgba(60, 60, 60, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.album-tab:hover::before {
+  opacity: 1;
+}
+
+.album-tab.active {
+  background-color: rgba(70, 70, 70, 0.8);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.album-tab.active::before {
+  opacity: 1;
+}
+
+.album-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(40, 40, 40, 0.4);
+}
+
+/* Cores para as abas de raridade */
+.legendary-tab {
+  color: #ffd700;
+}
+
+.epic-tab {
+  color: #9400d3;
+}
+
+.rare-tab {
+  color: #0000ff;
+}
+
+.uncommon-tab {
+  color: #008000;
+}
+
+.common-tab {
+  color: #a0a0a0;
+}
+
+/* Livro do álbum */
+.album-book {
+  perspective: 2000px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 600px;
+}
+
+/* Spread de duas páginas */
+.album-spread {
+  display: flex;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.album-spread.turning {
+  transform: rotateY(90deg);
+}
+
+/* Encadernação do álbum */
+.album-binding {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  width: 20px;
+  background: linear-gradient(
+    to right,
+    rgba(20, 20, 20, 0.7),
+    rgba(30, 30, 30, 0.9),
+    rgba(20, 20, 20, 0.7)
+  );
+  z-index: 10;
+  box-shadow: -5px 0 10px rgba(0, 0, 0, 0.3), 5px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.album-binding::before,
+.album-binding::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.album-binding::before {
+  top: 30%;
+}
+
+.album-binding::after {
+  top: 70%;
+}
+
+/* Páginas do álbum */
+.album-left-page,
+.album-right-page {
+  flex: 1;
+  background: rgba(30, 30, 30, 0.7);
+  border-radius: 10px 0 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: none;
+  padding: 20px;
+  min-height: 600px;
+  box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.3),
+    inset 0 0 50px rgba(0, 0, 0, 0.2);
+}
+
+.album-right-page {
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3), inset 0 0 50px rgba(0, 0, 0, 0.2);
+}
+
+.page-header {
+  border-bottom: 2px solid;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.page-number {
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Grid do álbum */
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 20px;
+  padding: 15px;
+  height: calc(100% - 350px);
+}
+
+/* Slots de figurinhas */
+.album-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  aspect-ratio: 3/4;
+}
+
+.album-sticker {
+  width: 100%;
+  height: 100%;
+  border: 3px solid;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  background-color: rgba(20, 20, 20, 0.6);
+}
+
+.album-sticker:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+}
+
+.album-sticker img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.album-sticker:hover img {
+  transform: scale(1.1);
+}
+
+/* Números dos slots */
+.slot-number {
+  position: absolute;
+  bottom: -8px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Efeito de brilho nas figurinhas */
+.sticker-shine {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.1) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: sticker-shine 3s infinite cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+
+@keyframes sticker-shine {
+  0% {
+    top: -100%;
+    left: -100%;
+  }
+  100% {
+    top: 100%;
+    left: 100%;
+  }
+}
+
+/* Slots vazios */
+.album-slot.empty {
+  opacity: 0.8;
+}
+
+.empty-slot {
+  width: 100%;
+  height: 100%;
+  border: 3px dashed;
+  border-radius: 10px;
+  background-color: rgba(20, 20, 20, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.question-mark {
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+
+/* Página de introdução do álbum */
+.album-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: white;
+  padding: 20px;
+}
+
+.album-cover-art {
+  margin-bottom: 20px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border: 3px solid rgba(255, 215, 0, 0.3);
+}
+
+.album-logo {
+  width: 80%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.3));
+}
+
+.album-intro p {
+  margin: 10px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Página de estatísticas */
+.album-stats {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+}
+
+.stats-progress {
+  margin-bottom: 30px;
+}
+
+.completion-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.completion-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: white;
+}
+
+.completion-bar-container {
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.completion-bar {
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    #ffd700,
+    #9400d3,
+    #0000ff,
+    #008000,
+    #808080
+  );
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.completion-percentage {
+  font-weight: bold;
+  color: white;
+  text-align: right;
+}
+
+.stats-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
+}
+
+.stat-item {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+}
+
+.stat-icon {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: white;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Cores para os diferentes tipos de estatísticas */
+.stat-item.legendary {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.7),
+    rgba(40, 40, 40, 0.7)
+  );
+  border-bottom: 3px solid #ffd700;
+}
+
+.stat-item.epic {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.7),
+    rgba(40, 40, 40, 0.7)
+  );
+  border-bottom: 3px solid #9400d3;
+}
+
+.stat-item.rare {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.7),
+    rgba(40, 40, 40, 0.7)
+  );
+  border-bottom: 3px solid #0000ff;
+}
+
+.stat-item.uncommon {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.7),
+    rgba(40, 40, 40, 0.7)
+  );
+  border-bottom: 3px solid #008000;
+}
+
+.stat-item.common {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.7),
+    rgba(40, 40, 40, 0.7)
+  );
+  border-bottom: 3px solid #808080;
+}
+
+/* Cores para os contadores de estatísticas */
+#legendary-frogs {
+  background: linear-gradient(to right, #ffd700, #ffa500);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+#epic-frogs {
+  background: linear-gradient(to right, #9400d3, #8a2be2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+#rare-frogs {
+  background: linear-gradient(to right, #0000ff, #4169e1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+#uncommon-frogs {
+  background: linear-gradient(to right, #008000, #32cd32);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+#common-frogs {
+  background: linear-gradient(to right, #808080, #a9a9a9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+  }
+
+  .album-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .completion-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .completion-bar-container {
+    width: 100%;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+  }
+
+  .album-container {
+    padding: 15px;
+  }
+
+  .album-tab {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 5px;
+    font-size: 10px;
+  }
+}
