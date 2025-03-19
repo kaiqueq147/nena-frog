@@ -473,10 +473,7 @@ const FrogGenerator = ({
 
       {/* Botão para ganhar moedas (diariamente ou por assistir anúncios) */}
       <div className="earn-coins-container">
-        <button
-          className="earn-coins-btn daily"
-          onClick={() => earnCoins(10000)}
-        >
+        <button className="earn-coins-btn daily" onClick={() => earnCoins(100)}>
           <span className="coin-icon-small">🪙</span> +100 Diárias
         </button>
         <button
