@@ -60,12 +60,33 @@ const FrogGenerator = ({
   const [showPackSelection, setShowPackSelection] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Novo estado para controlar loading do botão
 
-  // Carregar moedas do localStorage ao iniciar
+  // Estado para controlar o limite diário
+  const [todayEarnings, setTodayEarnings] = useState(0);
+  const [resetTime, setResetTime] = useState("");
+  const [isLimitReached, setIsLimitReached] = useState(false);
+  const [showLimitMessage, setShowLimitMessage] = useState(false);
+
+  // Carregar moedas e informações do limite diário do localStorage ao iniciar
   useEffect(() => {
     const storedCoins = localStorage.getItem("frogGeneratorCoins");
     if (storedCoins) {
       setCoins(parseInt(storedCoins));
     }
+
+    // Carregar ganhos do dia atual
+    loadDailyEarnings();
+
+    // Verificar e atualizar o horário de reset
+    updateResetTime();
+
+    // Configurar timer para verificar o reset a cada minuto
+    const intervalId = setInterval(() => {
+      checkAndResetDaily();
+      updateResetTime();
+    }, 60000); // a cada minuto
+
+    // Chamar uma vez para inicializar
+    checkAndResetDaily();
 
     // Tocar som de boas-vindas quando o componente montar (som de sapo)
     setTimeout(() => {
@@ -74,7 +95,104 @@ const FrogGenerator = ({
 
     // Pré-carregar todos os sons para evitar atrasos
     preloadAllSounds();
+
+    // Limpar o intervalo quando o componente for desmontado
+    return () => clearInterval(intervalId);
   }, []);
+
+  // Função para carregar os ganhos diários do localStorage
+  const loadDailyEarnings = () => {
+    try {
+      const storedData = localStorage.getItem("frogDailyEarnings");
+      if (storedData) {
+        const data = JSON.parse(storedData);
+        const today = new Date().toLocaleDateString();
+
+        // Se o dia armazenado for hoje, use os ganhos armazenados
+        if (data.date === today) {
+          setTodayEarnings(data.amount);
+          setIsLimitReached(data.amount >= 3000);
+        } else {
+          // Se for um dia diferente, zerar os ganhos
+          setTodayEarnings(0);
+          setIsLimitReached(false);
+          saveDailyEarnings(0);
+        }
+      } else {
+        // Se não houver dados, inicializar
+        setTodayEarnings(0);
+        setIsLimitReached(false);
+        saveDailyEarnings(0);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar ganhos diários:", error);
+      setTodayEarnings(0);
+      setIsLimitReached(false);
+    }
+  };
+
+  // Função para salvar os ganhos diários no localStorage
+  const saveDailyEarnings = (amount) => {
+    try {
+      const today = new Date().toLocaleDateString();
+      localStorage.setItem(
+        "frogDailyEarnings",
+        JSON.stringify({
+          date: today,
+          amount: amount,
+        })
+      );
+    } catch (error) {
+      console.error("Erro ao salvar ganhos diários:", error);
+    }
+  };
+
+  // Função para verificar e resetar o limite diário
+  const checkAndResetDaily = () => {
+    const now = new Date();
+    const resetHour = 21; // 21:00 horas
+
+    // Verificar se já passou do horário de reset (21:00)
+    if (now.getHours() >= resetHour) {
+      // Obter data armazenada no localStorage
+      const storedData = localStorage.getItem("frogDailyEarnings");
+      if (storedData) {
+        const data = JSON.parse(storedData);
+        const storedDate = new Date(data.date);
+
+        // Criar data de hoje às 21:00
+        const todayReset = new Date();
+        todayReset.setHours(resetHour, 0, 0, 0);
+
+        // Se a data armazenada for anterior ao horário de reset de hoje, resetar
+        if (storedDate < todayReset) {
+          setTodayEarnings(0);
+          setIsLimitReached(false);
+          saveDailyEarnings(0);
+          console.log("Limite diário resetado às 21:00");
+        }
+      }
+    }
+  };
+
+  // Função para atualizar o tempo até o próximo reset
+  const updateResetTime = () => {
+    const now = new Date();
+    let nextReset = new Date();
+    nextReset.setHours(21, 0, 0, 0); // 21:00 horas
+
+    // Se já passou das 21:00, o próximo reset é amanhã
+    if (now >= nextReset) {
+      nextReset.setDate(nextReset.getDate() + 1);
+    }
+
+    // Calcular tempo restante
+    const diffMs = nextReset - now;
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    setResetTime(`${diffHrs}h ${diffMins}m`);
+  };
 
   // Função para pré-carregar todos os sons
   const preloadAllSounds = () => {
@@ -177,11 +295,41 @@ const FrogGenerator = ({
     };
   }, []);
 
-  // Função para ganhar moedas com som
+  // Função para ganhar moedas com som e limite diário
   const earnCoins = (amount) => {
+    // Verificar limite diário
+    const newTodayEarnings = todayEarnings + amount;
+    if (newTodayEarnings > 3000) {
+      // Mostrar mensagem de limite atingido
+      setShowLimitMessage(true);
+
+      // Esconder a mensagem após 5 segundos
+      setTimeout(() => {
+        setShowLimitMessage(false);
+      }, 5000);
+
+      return;
+    }
+
+    // Atualizar moedas
     const newCoins = coins + amount;
     setCoins(newCoins);
     localStorage.setItem("frogGeneratorCoins", newCoins.toString());
+
+    // Atualizar ganhos diários
+    setTodayEarnings(newTodayEarnings);
+    saveDailyEarnings(newTodayEarnings);
+
+    // Verificar se o limite foi atingido com este ganho
+    if (newTodayEarnings >= 3000) {
+      setIsLimitReached(true);
+      setShowLimitMessage(true);
+
+      // Esconder a mensagem após 5 segundos
+      setTimeout(() => {
+        setShowLimitMessage(false);
+      }, 5000);
+    }
 
     // Tocar som de moeda
     playSound("coin-sound");
@@ -328,10 +476,24 @@ const FrogGenerator = ({
         )}
       </div>
 
-      {/* Contador de moedas */}
+      {/* Contador de moedas com informações de limite diário */}
       <div className="coins-display">
-        <span className="coin-icon">🪙</span>
-        <span className="coin-amount">{coins}</span>
+        <div className="coins-info">
+          <span className="coin-icon">🪙</span>
+          <span className="coin-amount">{coins}</span>
+        </div>
+        <div className="daily-limit-info">
+          <span>Hoje: {todayEarnings}/3000</span>
+          <div className="daily-limit-progress">
+            <div
+              className="daily-limit-bar"
+              style={{
+                width: `${Math.min((todayEarnings / 3000) * 100, 100)}%`,
+              }}
+            ></div>
+          </div>
+          <span>Reset em: {resetTime}</span>
+        </div>
       </div>
 
       {/* Botão principal para abrir seleção de pacotes */}
@@ -473,16 +635,43 @@ const FrogGenerator = ({
 
       {/* Botão para ganhar moedas (diariamente ou por assistir anúncios) */}
       <div className="earn-coins-container">
-        <button className="earn-coins-btn daily" onClick={() => earnCoins(100)}>
+        <button
+          className={`earn-coins-btn daily ${isLimitReached ? "disabled" : ""}`}
+          onClick={() => earnCoins(100)}
+          disabled={isLimitReached}
+        >
           <span className="coin-icon-small">🪙</span> +100 Diárias
         </button>
         <button
-          className="earn-coins-btn ad"
-          onClick={() => alert("Não desbloqueou não")}
+          className={`earn-coins-btn ad ${isLimitReached ? "disabled" : ""}`}
+          onClick={() => {
+            if (isLimitReached) {
+              setShowLimitMessage(true);
+              setTimeout(() => {
+                setShowLimitMessage(false);
+              }, 5000);
+            } else {
+              alert("Não desbloqueou não");
+            }
+          }}
+          disabled={isLimitReached}
         >
           <span className="coin-icon-small">🪙</span> +9999 Desbloquear o kaique
         </button>
       </div>
+
+      {/* Mensagem de limite diário atingido */}
+      {showLimitMessage && (
+        <div className="limit-message">
+          <div className="limit-message-content">
+            <h3>Hora de tomar o remédio! 💊</h3>
+            <p>Você atingiu o limite diário de 3000 moedas.</p>
+            <p>O limite será resetado às 21:00h.</p>
+            <p>Tempo até o reset: {resetTime}</p>
+            <button onClick={() => setShowLimitMessage(false)}>Entendi</button>
+          </div>
+        </div>
+      )}
 
       <p id="frogCount" style={{ color: "white", marginTop: "10px" }}>
         Sapos encontrados: {frogCount}
