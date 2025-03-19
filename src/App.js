@@ -135,16 +135,107 @@ function App() {
   };
 
   const getRarity = () => {
+    // Verificar se existe um boost de raridade armazenado
+    const rarityBoost = parseFloat(
+      localStorage.getItem("currentRarityBoost") || "1"
+    );
+
+    // Verificar se existe uma garantia de raridade mínima
+    const guaranteedMinRarity = localStorage.getItem("guaranteedMinRarity");
+
+    // Se temos uma garantia, e essa garantia é "Épico" (pacote lendário)
+    if (guaranteedMinRarity === "Épico") {
+      // Criar uma cópia das raridades, mas filtrar para incluir apenas Épico e Lendário
+      const guaranteedRarities = rarities.filter(
+        (rarity) => rarity.name === "Épico" || rarity.name === "Lendário"
+      );
+
+      // Ajustar as chances apenas entre essas raridades
+      const adjustedRarities = guaranteedRarities.map((rarity) => ({
+        ...rarity,
+        // Manter a proporção relativa entre Épico e Lendário, mas aumentar a chance de Lendário
+        chance:
+          rarity.name === "Lendário"
+            ? rarity.chance * rarityBoost * 2 // Dobrar o boost para Lendário
+            : rarity.chance,
+      }));
+
+      // Normalizar as chances para somar 100
+      const totalChance = adjustedRarities.reduce(
+        (sum, r) => sum + r.chance,
+        0
+      );
+      const normalizedRarities = adjustedRarities.map((r) => ({
+        ...r,
+        chance: (r.chance / totalChance) * 100,
+      }));
+
+      // Escolher entre as raridades garantidas
+      const random = Math.random() * 100;
+      let cumulativeChance = 0;
+
+      for (const rarity of normalizedRarities) {
+        cumulativeChance += rarity.chance;
+        if (random <= cumulativeChance) {
+          // Limpar as configurações após usar
+          localStorage.removeItem("currentRarityBoost");
+          localStorage.removeItem("guaranteedMinRarity");
+          return rarity;
+        }
+      }
+
+      // Fallback para Épico (caso algo dê errado)
+      const epicRarity = rarities.find((r) => r.name === "Épico");
+      localStorage.removeItem("currentRarityBoost");
+      localStorage.removeItem("guaranteedMinRarity");
+      return epicRarity;
+    }
+
+    // Código normal para outras situações, sem garantia
+    // Aumentar as chances de raridades mais altas com base no rarityBoost
+    const adjustedRarities = rarities.map((rarity) => {
+      if (rarity.name === "Comum") {
+        // Diminuir a chance de comum conforme o boost aumenta
+        return {
+          ...rarity,
+          chance: Math.max(10, rarity.chance - (rarityBoost - 1) * 15),
+        };
+      } else if (rarity.name === "Incomum") {
+        // Manter incomum relativamente estável
+        return { ...rarity, chance: rarity.chance };
+      } else {
+        // Aumentar a chance de raridades altas
+        return {
+          ...rarity,
+          chance: rarity.chance * rarityBoost,
+        };
+      }
+    });
+
+    // Normalizar as chances para somar 100
+    const totalChance = adjustedRarities.reduce((sum, r) => sum + r.chance, 0);
+    const normalizedRarities = adjustedRarities.map((r) => ({
+      ...r,
+      chance: (r.chance / totalChance) * 100,
+    }));
+
+    // Usar as raridades ajustadas para determinar o resultado
     const random = Math.random() * 100;
     let cumulativeChance = 0;
 
-    for (const rarity of rarities) {
+    for (const rarity of normalizedRarities) {
       cumulativeChance += rarity.chance;
       if (random <= cumulativeChance) {
+        // Limpar o boost após usar
+        localStorage.removeItem("currentRarityBoost");
+        localStorage.removeItem("guaranteedMinRarity");
         return rarity;
       }
     }
 
+    // Limpar configurações
+    localStorage.removeItem("currentRarityBoost");
+    localStorage.removeItem("guaranteedMinRarity");
     return rarities[0];
   };
 
@@ -216,6 +307,7 @@ function App() {
       const newGridPacks = [];
 
       for (let i = 0; i < count; i++) {
+        // Obter a raridade computada pelas regras de garantia e boost
         const rarity = getRarity();
         let imageUrl = await getFrogFromUnsplash();
 
@@ -228,11 +320,11 @@ function App() {
 
           if (count === 1) {
             // Show single pack animation
-            const fixedRarity = getFixedRarityFromId(extractImageId(imageUrl));
-            setPackData({ imageUrl, rarity: fixedRarity });
+            // Usar diretamente a raridade calculada por getRarity()
+            setPackData({ imageUrl, rarity: rarity });
             setShowPack(true);
           } else {
-            // Add to grid packs
+            // Add to grid packs com a raridade correta
             newGridPacks.push({ imageUrl, rarity });
           }
         } else {
@@ -294,6 +386,8 @@ function App() {
           onGenerateFrog={handleGenerateFrog}
           frogCount={frogCount}
           showInitialPack={showInitialPack}
+          currentFrog={packData}
+          loading={false}
         />
 
         <button

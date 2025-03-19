@@ -639,3 +639,265 @@
     padding: 14px 24px;
   }
 }
+/* Estilo para o contador de moedas */
+.coins-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #333333 0%, #222222 100%);
+  border-radius: 25px;
+  padding: 8px 16px;
+  margin: 15px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  max-width: 200px;
+  position: relative;
+}
+
+.coin-icon {
+  font-size: 24px;
+  margin-right: 10px;
+  animation: coinRotate 5s infinite linear;
+  display: inline-block;
+}
+
+.coin-icon-small {
+  font-size: 16px;
+  margin-right: 5px;
+  display: inline-block;
+}
+
+.coin-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+  font-family: "Poppins", sans-serif;
+}
+
+@keyframes coinRotate {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+/* Overlay de seleção de pacotes */
+.pack-selection-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+}
+
+.pack-selection-container {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 15px;
+  padding: 25px;
+  max-width: 90%;
+  width: 600px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pack-selection-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pack-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.pack-option {
+  background: rgba(50, 50, 50, 0.5);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pack-option:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.pack-option.selected {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: rgba(60, 60, 60, 0.7);
+}
+
+.pack-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pack-option h4 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pack-description {
+  font-size: 12px;
+  color: #cccccc;
+  margin-bottom: 10px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pack-price {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 10px;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.pack-quantity-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.quantity-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quantity-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(255, 215, 0, 0.3);
+}
+
+.quantity-btn:disabled {
+  background: linear-gradient(135deg, #999999 0%, #666666 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.close-selection-btn {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+.close-selection-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Botões para ganhar moedas */
+.earn-coins-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.earn-coins-btn {
+  background: linear-gradient(135deg, #333333 0%, #222222 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.earn-coins-btn.daily {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+}
+
+.earn-coins-btn.ad {
+  background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+}
+
+.earn-coins-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .pack-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pack-quantity-selector {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .quantity-btn {
+    width: 80%;
+  }
+
+  .earn-coins-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .earn-coins-btn {
+    width: 80%;
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pack-options {
+    grid-template-columns: 1fr;
+  }
+}
