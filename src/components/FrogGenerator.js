@@ -299,7 +299,7 @@ const FrogGenerator = ({
   const earnCoins = (amount) => {
     // Verificar limite diário
     const newTodayEarnings = todayEarnings + amount;
-    if (newTodayEarnings > 3000) {
+    if (newTodayEarnings > 999999999999) {
       // Mostrar mensagem de limite atingido
       setShowLimitMessage(true);
 
