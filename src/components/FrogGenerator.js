@@ -644,19 +644,10 @@ const FrogGenerator = ({
         </button>
         <button
           className={`earn-coins-btn ad ${isLimitReached ? "disabled" : ""}`}
-          onClick={() => {
-            if (isLimitReached) {
-              setShowLimitMessage(true);
-              setTimeout(() => {
-                setShowLimitMessage(false);
-              }, 5000);
-            } else {
-              alert("Não desbloqueou não");
-            }
-          }}
+          onClick={() => earnCoins(9999)}
           disabled={isLimitReached}
         >
-          <span className="coin-icon-small">🪙</span> +9999 Desbloquear o kaique
+          <span className="coin-icon-small">🪙</span> +9999 Voltar a amar o kaique
         </button>
       </div>
 
