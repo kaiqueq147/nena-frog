@@ -111,7 +111,7 @@ const FrogGenerator = ({
         // Se o dia armazenado for hoje, use os ganhos armazenados
         if (data.date === today) {
           setTodayEarnings(data.amount);
-          setIsLimitReached(data.amount >= 3000);
+          setIsLimitReached(data.amount >= 999999999);
         } else {
           // Se for um dia diferente, zerar os ganhos
           setTodayEarnings(0);
@@ -321,7 +321,7 @@ const FrogGenerator = ({
     saveDailyEarnings(newTodayEarnings);
 
     // Verificar se o limite foi atingido com este ganho
-    if (newTodayEarnings >= 3000) {
+    if (newTodayEarnings >= 999999999999) {
       setIsLimitReached(true);
       setShowLimitMessage(true);
 
@@ -483,12 +483,12 @@ const FrogGenerator = ({
           <span className="coin-amount">{coins}</span>
         </div>
         <div className="daily-limit-info">
-          <span>Hoje: {todayEarnings}/3000</span>
+          <span>Hoje: {todayEarnings}/999999999</span>
           <div className="daily-limit-progress">
             <div
               className="daily-limit-bar"
               style={{
-                width: `${Math.min((todayEarnings / 3000) * 100, 100)}%`,
+                width: `${Math.min((todayEarnings / 99999999999) * 100, 100)}%`,
               }}
             ></div>
           </div>
@@ -656,7 +656,7 @@ const FrogGenerator = ({
         <div className="limit-message">
           <div className="limit-message-content">
             <h3>Hora de tomar o remédio! 💊</h3>
-            <p>Você atingiu o limite diário de 3000 moedas.</p>
+            <p>Você atingiu o limite diário de 999999999999 moedas.</p>
             <p>O limite será resetado às 21:00h.</p>
             <p>Tempo até o reset: {resetTime}</p>
             <button onClick={() => setShowLimitMessage(false)}>Entendi</button>
