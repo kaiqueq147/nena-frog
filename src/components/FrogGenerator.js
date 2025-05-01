@@ -647,8 +647,7 @@ const FrogGenerator = ({
           onClick={() => earnCoins(9999)}
           disabled={isLimitReached}
         >
-          <span className="coin-icon-small">🪙</span> +9999 Voltar a amar o
-          kaique
+          <span className="coin-icon-small">🪙</span> +9999 Aquilo hoje
         </button>
       </div>
 
