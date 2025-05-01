@@ -6,6 +6,30 @@ import PackDisplay from "./components/PackDisplay";
 import FrogModal from "./components/FrogModal";
 import MultiPackGrid from "./components/MultiPackGrid";
 
+// Importação dinâmica de todas as imagens no diretório
+// Esta sintaxe especial é interpretada pelo webpack
+function importAllImages(r) {
+  const images = {};
+  r.keys().forEach((item) => {
+    const id = item.replace(/^\.\//, "").replace(/\.(jpg|jpeg|png)$/, "");
+    images[id] = r(item);
+  });
+  return images;
+}
+
+// Importa todas as imagens da pasta ./images/frog_images
+const importedImages = importAllImages(
+  require.context("./images/frog_images", false, /\.(jpg|jpeg|png)$/)
+);
+
+// Converte o objeto de imagens importadas em um array para uso fácil
+const frogImages = Object.keys(importedImages).map((id) => ({
+  id: id,
+  url: importedImages[id],
+}));
+
+console.log(`Total de imagens de sapos importadas: ${frogImages.length}`);
+
 function App() {
   const [frogCollection, setFrogCollection] = useState([]);
   const [showCollection, setShowCollection] = useState(false);
@@ -20,6 +44,9 @@ function App() {
   const [showMultiPackGrid, setShowMultiPackGrid] = useState(false);
   const [frogCount, setFrogCount] = useState(0);
   const [showInitialPack, setShowInitialPack] = useState(true);
+
+  // Lista de imagens de sapos locais
+  const [loadedImages, setLoadedImages] = useState(true);
 
   // Rarities configuration
   const rarities = [
@@ -42,6 +69,18 @@ function App() {
   useEffect(() => {
     // Load collection from localStorage on component mount
     loadCollection();
+
+    // Log para confirmar que todas as imagens foram importadas
+    console.log(
+      "Imagens disponíveis:",
+      frogImages.map((img) => img.id).join(", ")
+    );
+
+    // Teste de carregar algumas imagens aleatórias
+    for (let i = 0; i < 5; i++) {
+      const randomImage = getLocalFrogImage();
+      console.log(`Testando imagem ${i + 1}:`, randomImage.id);
+    }
   }, []);
 
   const loadCollection = () => {
@@ -73,231 +112,93 @@ function App() {
     setFrogCollection(collection);
   };
 
-  const extractImageId = (url) => {
-    if (url.includes("unsplash.com")) {
-      const match = url.match(/\/photos\/([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) return match[1];
-
-      const photoIdMatch = url.match(/photo-([a-zA-Z0-9_-]+)/);
-      if (photoIdMatch && photoIdMatch[1]) return photoIdMatch[1];
-    }
-
-    if (url.includes("pixabay.com")) {
-      const match = url.match(/\/([0-9]+)_/);
-      if (match && match[1]) return match[1];
-    }
-
-    return hashString(url);
+  // Função simplificada para obter uma imagem de sapo
+  const getLocalFrogImage = () => {
+    // Selecionar uma imagem aleatória do array
+    const randomIndex = Math.floor(Math.random() * frogImages.length);
+    return frogImages[randomIndex];
   };
 
-  const hashString = (str) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash).toString();
+  // Adicionar uma função de verificação de imagem para debug
+  const logImageAvailability = (imageUrl) => {
+    // Criar um objeto Image para verificar se a imagem pode ser carregada
+    const img = new Image();
+    img.onload = () =>
+      console.log(`✅ Imagem carregada com sucesso: ${imageUrl}`);
+    img.onerror = () =>
+      console.error(`❌ Falha ao carregar imagem: ${imageUrl}`);
+    img.src = imageUrl;
   };
 
+  // Modificar a função para carregar imagens locais com verificação
+  useEffect(() => {
+    // Verificar disponibilidade das imagens importadas
+    frogImages.forEach((img) => {
+      console.log(`✅ Imagem importada: ${img.id}`);
+    });
+
+    setLoadedImages(true);
+    console.log("Total de imagens importadas:", frogImages.length);
+  }, []);
+
+  // Simplificar a função getFixedRarityFromId
   const getFixedRarityFromId = (id) => {
     // Verificar se existe uma garantia de raridade mínima
     const guaranteedMinRarity = localStorage.getItem("guaranteedMinRarity");
 
     if (guaranteedMinRarity === "Épico") {
-      // Usar o ID para determinar entre Épico e Lendário de forma consistente
-      const numericValue = parseInt(
-        id.replace(/[^0-9]/g, "").slice(0, 8) || "0",
-        10
-      );
-      // Se o valor for múltiplo de 5, retorna Lendário (20% de chance), caso contrário Épico
-      if (numericValue % 5 === 0) {
-        return rarities.find((r) => r.name === "Lendário");
-      } else {
+      // Para pacotes lendários, retornar aleatoriamente Épico ou Lendário
+      const random = Math.random();
+      if (random < 0.7) {
+        // 70% de chance de Épico
         return rarities.find((r) => r.name === "Épico");
-      }
-    }
-
-    // Para outros casos, usar o algoritmo original
-    const numericValue = parseInt(
-      id.replace(/[^0-9]/g, "").slice(0, 8) || "0",
-      10
-    );
-    const randomValue = (numericValue % 100) + 1;
-
-    let cumulativeChance = 0;
-    for (const rarity of rarities) {
-      cumulativeChance += rarity.chance;
-      if (randomValue <= cumulativeChance) {
-        return rarity;
-      }
-    }
-
-    return rarities[0];
-  };
-
-  const getRarity = () => {
-    // Verificar se existe um boost de raridade armazenado
-    const rarityBoost = parseFloat(
-      localStorage.getItem("currentRarityBoost") || "1"
-    );
-
-    // Verificar se existe uma garantia de raridade mínima
-    const guaranteedMinRarity = localStorage.getItem("guaranteedMinRarity");
-
-    // Se temos uma garantia, e essa garantia é "Épico" (pacote lendário)
-    if (guaranteedMinRarity === "Épico") {
-      // Criar uma cópia das raridades, mas filtrar para incluir apenas Épico e Lendário
-      const guaranteedRarities = rarities.filter(
-        (rarity) => rarity.name === "Épico" || rarity.name === "Lendário"
-      );
-
-      // Ajustar as chances apenas entre essas raridades
-      const adjustedRarities = guaranteedRarities.map((rarity) => ({
-        ...rarity,
-        // Manter a proporção relativa entre Épico e Lendário, mas aumentar a chance de Lendário
-        chance:
-          rarity.name === "Lendário"
-            ? rarity.chance * rarityBoost * 2 // Dobrar o boost para Lendário
-            : rarity.chance,
-      }));
-
-      // Normalizar as chances para somar 100
-      const totalChance = adjustedRarities.reduce(
-        (sum, r) => sum + r.chance,
-        0
-      );
-      const normalizedRarities = adjustedRarities.map((r) => ({
-        ...r,
-        chance: (r.chance / totalChance) * 100,
-      }));
-
-      // Escolher entre as raridades garantidas
-      const random = Math.random() * 100;
-      let cumulativeChance = 0;
-
-      for (const rarity of normalizedRarities) {
-        cumulativeChance += rarity.chance;
-        if (random <= cumulativeChance) {
-          // Limpar as configurações após usar
-          localStorage.removeItem("currentRarityBoost");
-          localStorage.removeItem("guaranteedMinRarity");
-          return rarity;
-        }
-      }
-
-      // Fallback para Épico (caso algo dê errado)
-      const epicRarity = rarities.find((r) => r.name === "Épico");
-      localStorage.removeItem("currentRarityBoost");
-      localStorage.removeItem("guaranteedMinRarity");
-      return epicRarity;
-    }
-
-    // Código normal para outras situações, sem garantia
-    // Aumentar as chances de raridades mais altas com base no rarityBoost
-    const adjustedRarities = rarities.map((rarity) => {
-      if (rarity.name === "Comum") {
-        // Diminuir a chance de comum conforme o boost aumenta
-        return {
-          ...rarity,
-          chance: Math.max(10, rarity.chance - (rarityBoost - 1) * 15),
-        };
-      } else if (rarity.name === "Incomum") {
-        // Manter incomum relativamente estável
-        return { ...rarity, chance: rarity.chance };
       } else {
-        // Aumentar a chance de raridades altas
-        return {
-          ...rarity,
-          chance: rarity.chance * rarityBoost,
-        };
-      }
-    });
-
-    // Normalizar as chances para somar 100
-    const totalChance = adjustedRarities.reduce((sum, r) => sum + r.chance, 0);
-    const normalizedRarities = adjustedRarities.map((r) => ({
-      ...r,
-      chance: (r.chance / totalChance) * 100,
-    }));
-
-    // Usar as raridades ajustadas para determinar o resultado
-    const random = Math.random() * 100;
-    let cumulativeChance = 0;
-
-    for (const rarity of normalizedRarities) {
-      cumulativeChance += rarity.chance;
-      if (random <= cumulativeChance) {
-        // Limpar o boost após usar
-        localStorage.removeItem("currentRarityBoost");
-        localStorage.removeItem("guaranteedMinRarity");
-        return rarity;
+        // 30% de chance de Lendário
+        return rarities.find((r) => r.name === "Lendário");
       }
     }
 
-    // Limpar configurações
-    localStorage.removeItem("currentRarityBoost");
-    localStorage.removeItem("guaranteedMinRarity");
-    return rarities[0];
-  };
+    // Extrair número do ID (assumindo que id pode ser algo como "frog_12")
+    const numMatch = id.match(/\d+/);
+    const numericValue = numMatch ? parseInt(numMatch[0]) : 0;
 
-  const getFrogFromUnsplash = async () => {
-    try {
-      const searchTerms = [
-        "frog",
-        "tree frog",
-        "green frog",
-        "poison dart frog",
-        "bullfrog",
-      ];
-      const randomTerm =
-        searchTerms[Math.floor(Math.random() * searchTerms.length)];
+    // Determinar a raridade baseada no número da imagem
+    const rarityIndex = numericValue % 100;
 
-      const response = await fetch(
-        `https://api.unsplash.com/photos/random?query=${randomTerm}&count=1`,
-        {
-          headers: {
-            Authorization: `Client-ID ${accessKey}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0) {
-          return data[0].urls.regular;
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error("Erro na API Unsplash:", error);
-      return null;
+    if (rarityIndex >= 0 && rarityIndex < 60) {
+      return rarities.find((r) => r.name === "Comum");
+    } else if (rarityIndex >= 60 && rarityIndex < 85) {
+      return rarities.find((r) => r.name === "Incomum");
+    } else if (rarityIndex >= 85 && rarityIndex < 95) {
+      return rarities.find((r) => r.name === "Raro");
+    } else if (rarityIndex >= 95 && rarityIndex < 99) {
+      return rarities.find((r) => r.name === "Épico");
+    } else {
+      return rarities.find((r) => r.name === "Lendário");
     }
   };
 
-  const getFrogFromPixabay = async () => {
-    try {
-      const searchTerms = ["frog", "tree frog", "green frog", "toad"];
-      const randomTerm =
-        searchTerms[Math.floor(Math.random() * searchTerms.length)];
-
-      const url = `https://pixabay.com/api/?key=${pixabayApiKey}&q=${encodeURIComponent(
-        randomTerm
-      )}&image_type=photo`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.hits && data.hits.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.hits.length);
-        return data.hits[randomIndex].webformatURL;
-      }
-      return null;
-    } catch (error) {
-      console.error("Erro na API Pixabay:", error);
-      return null;
+  // Função para extrair ID simplificada
+  const extractImageId = (imageObj) => {
+    // Se for um objeto imagem (do array frogImages)
+    if (typeof imageObj === "object" && imageObj.id) {
+      return imageObj.id;
     }
+
+    // Se for uma string URL
+    if (typeof imageObj === "string") {
+      // Extrair apenas o nome do arquivo sem a extensão
+      const fileNameMatch = imageObj.match(/([^\/]+)\.[^\.]+$/);
+      if (fileNameMatch && fileNameMatch[1]) {
+        return fileNameMatch[1];
+      }
+    }
+
+    // Fallback
+    return String(Math.floor(Math.random() * 10000));
   };
 
+  // Modificar a função handleGenerateFrog para evitar IDs duplicados
   const handleGenerateFrog = async (count = 1) => {
     setShowInitialPack(false);
 
@@ -319,70 +220,79 @@ function App() {
       });
 
       const newGridPacks = [];
+      const usedImageIds = new Set(); // Conjunto para controlar IDs já usados neste lote
+
+      // Tentativas máximas para evitar loop infinito em caso de poucas imagens
+      const maxAttempts = frogImages.length * 2;
+      let attempts = 0;
 
       for (let i = 0; i < count; i++) {
-        let imageUrl = await getFrogFromUnsplash();
-
-        if (!imageUrl) {
-          imageUrl = await getFrogFromPixabay();
-        }
-
-        if (imageUrl) {
-          // Extrair o ID da imagem
-          const imageId = extractImageId(imageUrl);
-
-          // Determinar a raridade
-          let finalRarity;
-
-          if (guaranteedMinRarity === "Épico") {
-            // Para pacotes lendários, forçar raridade épica ou lendária
-            const random = Math.random();
-            if (random < 0.7) {
-              // 70% chance de épico
-              finalRarity = rarities.find((r) => r.name === "Épico");
-            } else {
-              // 30% chance de lendário
-              finalRarity = rarities.find((r) => r.name === "Lendário");
-            }
-            console.log(`Sapo garantido com raridade: ${finalRarity.name}`);
-          } else {
-            // Para outros pacotes, aplicar o boost de raridade
-            finalRarity = getRarityWithBoost(rarityBoost);
-            console.log(
-              `Sapo gerado com boost ${rarityBoost}, raridade: ${finalRarity.name}`
-            );
-          }
-
-          // Verificar se o sapo já existe na coleção COM ESTA RARIDADE ESPECÍFICA
-          const existingFrog = frogCollection.find(
-            (frog) =>
-              extractImageId(frog.imageUrl) === imageId &&
-              frog.rarity === finalRarity.name
+        // Limitar tentativas para evitar loop infinito
+        if (attempts >= maxAttempts) {
+          console.warn(
+            "Atingido número máximo de tentativas para encontrar sapos únicos. Alguns pacotes podem estar faltando."
           );
-
-          if (existingFrog) {
-            // Se já existe com esta raridade, tentar outro sapo
-            console.log(
-              "Sapo com esta imagem e raridade já existe na coleção, tentando outra imagem..."
-            );
-            i--; // Tentar novamente este índice
-            continue;
-          }
-
-          if (count === 1) {
-            // Show single pack animation
-            setPackData({ imageUrl, rarity: finalRarity });
-            console.log(`Pack único configurado: ${finalRarity.name}`);
-            setShowPack(true);
-          } else {
-            // Add to grid packs
-            console.log(`Adicionando ao grid: ${finalRarity.name}`);
-            newGridPacks.push({ imageUrl, rarity: finalRarity });
-          }
-        } else {
-          console.error("Não foi possível encontrar imagens de sapos");
           break;
         }
+
+        // Obter imagem e ID
+        const imageObj = getLocalFrogImage();
+        const imageId = imageObj.id;
+
+        // Verificar se este ID já foi usado neste lote de pacotes
+        if (usedImageIds.has(imageId)) {
+          console.log(`ID já usado neste lote: ${imageId}, tentando outro...`);
+          attempts++;
+          i--; // Decrementar i para tentar novamente este índice
+          continue;
+        }
+
+        // Adicionar o ID ao conjunto de IDs usados
+        usedImageIds.add(imageId);
+
+        const imageUrl = imageObj.url;
+
+        if (!imageUrl) {
+          console.error("Falha ao obter imagem de sapo");
+          i--; // Tentar novamente
+          attempts++;
+          continue;
+        }
+
+        // Determinar a raridade com base no ID
+        const finalRarity = getFixedRarityFromId(imageId);
+
+        // Verificar se este sapo com esta raridade já existe na coleção
+        const existingFrog = frogCollection.find(
+          (frog) =>
+            extractImageId(frog.imageUrl) === imageId &&
+            frog.rarity === finalRarity.name
+        );
+
+        if (existingFrog) {
+          // Se já existe com esta raridade, tentar outro sapo
+          console.log(
+            "Sapo com esta imagem e raridade já existe na coleção, tentando outra imagem..."
+          );
+          i--; // Tentar novamente este índice
+          attempts++;
+          usedImageIds.delete(imageId); // Remover do conjunto para permitir outras raridades
+          continue;
+        }
+
+        if (count === 1) {
+          // Show single pack animation
+          setPackData({ imageUrl, imageId, rarity: finalRarity });
+          console.log(`Pack único configurado: ${finalRarity.name}`);
+          setShowPack(true);
+        } else {
+          // Add to grid packs
+          console.log(`Adicionando ao grid: ${finalRarity.name}`);
+          newGridPacks.push({ imageUrl, imageId, rarity: finalRarity });
+        }
+
+        // Resetar o contador de tentativas ao encontrar um sapo válido
+        attempts = 0;
       }
 
       // IMPORTANTE: Primeiro definir os pacotes, depois mostrar o grid
@@ -392,63 +302,15 @@ function App() {
         );
         setGridPacks(newGridPacks);
 
-        // Usar setTimeout para garantir que gridPacks foi atualizado antes de mostrar o modal
-        setTimeout(() => {
-          console.log("Mostrando MultiPackGrid...");
-          setShowMultiPackGrid(true);
-        }, 100);
+        // Mostrar o grid imediatamente
+        setShowMultiPackGrid(true);
       }
-
-      // NÃO limpar as configurações aqui
     } catch (error) {
       console.error("Erro:", error);
       // Limpar as configurações em caso de erro
       localStorage.removeItem("currentRarityBoost");
       localStorage.removeItem("guaranteedMinRarity");
     }
-  };
-
-  // Nova função que aplica o boost de raridade
-  const getRarityWithBoost = (boost) => {
-    // Ajustar as chances com base no boost
-    const adjustedRarities = rarities.map((rarity) => {
-      if (rarity.name === "Comum") {
-        // Diminuir a chance de comum conforme o boost aumenta
-        return {
-          ...rarity,
-          chance: Math.max(10, rarity.chance - (boost - 1) * 15),
-        };
-      } else if (rarity.name === "Incomum") {
-        // Manter incomum relativamente estável
-        return { ...rarity, chance: rarity.chance };
-      } else {
-        // Aumentar a chance de raridades altas
-        return {
-          ...rarity,
-          chance: rarity.chance * boost,
-        };
-      }
-    });
-
-    // Normalizar as chances para somar 100
-    const totalChance = adjustedRarities.reduce((sum, r) => sum + r.chance, 0);
-    const normalizedRarities = adjustedRarities.map((r) => ({
-      ...r,
-      chance: (r.chance / totalChance) * 100,
-    }));
-
-    // Usar as raridades ajustadas para determinar o resultado
-    const random = Math.random() * 100;
-    let cumulativeChance = 0;
-
-    for (const rarity of normalizedRarities) {
-      cumulativeChance += rarity.chance;
-      if (random <= cumulativeChance) {
-        return rarity;
-      }
-    }
-
-    return rarities[0]; // Fallback para comum
   };
 
   const handlePackOpened = (imageUrl, rarity) => {
@@ -472,23 +334,32 @@ function App() {
     setShowModal(true);
   };
 
-  const addFrogToCollection = (imageUrl, rarity) => {
-    // Extract the ID from the image URL
-    const imageId = extractImageId(imageUrl);
+  // Modificar a função addFrogToCollection para trabalhar com os novos objetos de imagem
+  const addFrogToCollection = (imageObj, rarity) => {
+    // Extract the ID from the image object
+    const imageId =
+      typeof imageObj === "object" ? imageObj.id : extractImageId(imageObj);
+    const imageUrl = typeof imageObj === "object" ? imageObj.url : imageObj;
 
     console.log("Tentando adicionar sapo à coleção:", {
       id: imageId,
       raridade: typeof rarity === "object" ? rarity.name : rarity,
     });
 
-    // Check if the frog already exists in the collection
-    const existingFrogIndex = frogCollection.findIndex(
-      (frog) => extractImageId(frog.imageUrl) === imageId
+    // Determinar o nome da raridade
+    const rarityName = typeof rarity === "object" ? rarity.name : rarity;
+
+    // Verificar se já existe um sapo com a mesma imagem E o mesmo tier
+    const existingFrog = frogCollection.find(
+      (frog) =>
+        extractImageId(frog.imageUrl) === imageId && frog.rarity === rarityName
     );
 
-    // If the frog already exists, don't add it again
-    if (existingFrogIndex >= 0) {
-      console.log("Sapo já existe na coleção, não será adicionado novamente");
+    // Se o sapo já existe com a mesma raridade, não adicionar novamente
+    if (existingFrog) {
+      console.log(
+        "Sapo com esta imagem e tier já existe na coleção, não será adicionado novamente"
+      );
       return false;
     }
 
@@ -497,27 +368,23 @@ function App() {
 
     // Se for uma string ou não tiver todas as propriedades necessárias
     if (typeof rarity === "string" || !rarity.class || !rarity.color) {
-      const rarityName = typeof rarity === "string" ? rarity : rarity.name;
       rarityObject = rarities.find((r) => r.name === rarityName);
 
       if (!rarityObject) {
         console.error("Raridade não encontrada:", rarityName);
         rarityObject = rarities[0]; // Usar comum como fallback
       }
-
-      console.log("Convertido raridade para objeto completo:", rarityObject);
     }
 
-    // Add the frog to the collection with the fixed rarity
+    // Add the frog to the collection with the provided data
     const newFrog = {
       imageUrl: imageUrl,
+      imageId: imageId,
       rarity: rarityObject.name,
       class: rarityObject.class,
       color: rarityObject.color,
       date: new Date().toISOString(),
     };
-
-    console.log("Novo sapo a ser adicionado:", newFrog);
 
     const newCollection = [...frogCollection, newFrog];
 
@@ -530,24 +397,18 @@ function App() {
       );
     } catch (error) {
       console.error("Erro ao salvar no localStorage:", error);
-      // Tentativa de fallback para coleção menor se for problema de espaço
-      if (error.name === "QuotaExceededError") {
-        try {
-          const limitedCollection = newCollection.slice(-200); // Limitar aos 200 mais recentes
-          localStorage.setItem(
-            "frogCollection",
-            JSON.stringify(limitedCollection)
-          );
-          console.log(
-            "Salvou versão limitada da coleção:",
-            limitedCollection.length
-          );
-          setFrogCollection(limitedCollection);
-          setFrogCount(limitedCollection.length);
-          return true;
-        } catch (e) {
-          console.error("Falha no fallback:", e);
-        }
+      // Tentativa de fallback
+      try {
+        const limitedCollection = newCollection.slice(-100);
+        localStorage.setItem(
+          "frogCollection",
+          JSON.stringify(limitedCollection)
+        );
+        setFrogCollection(limitedCollection);
+        setFrogCount(limitedCollection.length);
+        return true;
+      } catch (e) {
+        console.error("Falha no fallback:", e);
       }
     }
 
@@ -589,6 +450,13 @@ function App() {
       );
     }
   }, [showMultiPackGrid, gridPacks]);
+
+  // Modificar a função para imprimir detalhes úteis sobre o ambiente
+  useEffect(() => {
+    console.log("Ambiente React:", process.env.NODE_ENV);
+    console.log("URL pública:", process.env.PUBLIC_URL);
+    console.log("Caminho para imagens de sapos:", process.env.PUBLIC_URL);
+  }, []);
 
   return (
     <div className="App">

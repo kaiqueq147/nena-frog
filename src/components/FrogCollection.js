@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./FrogCollection.css";
+import FrogImageFallback from "./FrogImageFallback";
+import FrogImage from "./FrogImage";
 
 const FrogCollection = ({ collection, onShowDetails }) => {
   // Estado para controlar qual página do álbum está sendo visualizada
@@ -65,7 +67,7 @@ const FrogCollection = ({ collection, onShowDetails }) => {
     return { leftPage, rightPage };
   };
 
-  // Função para renderizar uma figurinha de sapo
+  // Função para renderizar uma figurinha de sapo com fallback
   const renderFrogSticker = (frog, index, color) => {
     if (!frog) return renderEmptySlot(index, color);
 
@@ -76,7 +78,11 @@ const FrogCollection = ({ collection, onShowDetails }) => {
         onClick={() => onShowDetails(frog)}
       >
         <div className="album-sticker" style={{ borderColor: color }}>
-          <img src={frog.imageUrl} alt={`Sapo ${frog.rarity}`} />
+          <FrogImage
+            src={frog.imageUrl}
+            alt={`Sapo ${frog.rarity}`}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
           <div className="sticker-shine"></div>
         </div>
         <div className="slot-number">{index + 1}</div>
