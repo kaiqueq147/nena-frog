@@ -483,12 +483,12 @@ const FrogGenerator = ({
           <span className="coin-amount">{coins}</span>
         </div>
         <div className="daily-limit-info">
-          <span>Hoje: {todayEarnings}/999999999</span>
+          <span>Hoje: {todayEarnings}/5000</span>
           <div className="daily-limit-progress">
             <div
               className="daily-limit-bar"
               style={{
-                width: `${Math.min((todayEarnings / 99999999999) * 100, 100)}%`,
+                width: `${Math.min((todayEarnings / 5000) * 100, 100)}%`,
               }}
             ></div>
           </div>
