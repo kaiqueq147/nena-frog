@@ -299,7 +299,7 @@ const FrogGenerator = ({
   const earnCoins = (amount) => {
     // Verificar limite diário
     const newTodayEarnings = todayEarnings + amount;
-    if (newTodayEarnings > 999999999999) {
+    if (newTodayEarnings > 5000) {
       // Mostrar mensagem de limite atingido
       setShowLimitMessage(true);
 
@@ -321,7 +321,7 @@ const FrogGenerator = ({
     saveDailyEarnings(newTodayEarnings);
 
     // Verificar se o limite foi atingido com este ganho
-    if (newTodayEarnings >= 999999999999) {
+    if (newTodayEarnings >= 5000) {
       setIsLimitReached(true);
       setShowLimitMessage(true);
 
@@ -657,7 +657,7 @@ const FrogGenerator = ({
         <div className="limit-message">
           <div className="limit-message-content">
             <h3>Hora de tomar o remédio! 💊</h3>
-            <p>Você atingiu o limite diário de 999999999999 moedas.</p>
+            <p>Você atingiu o limite diário de 5000 moedas.</p>
             <p>O limite será resetado às 21:00h.</p>
             <p>Tempo até o reset: {resetTime}</p>
             <button onClick={() => setShowLimitMessage(false)}>Entendi</button>
