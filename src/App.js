@@ -94,8 +94,40 @@ function App() {
           collection.length,
           "sapos"
         );
-        setFrogCollection(collection);
-        setFrogCount(collection.length);
+
+        // Verifica e corrige URLs de imagens, se necessário
+        const processedCollection = collection.map((frog) => {
+          // Garantir que as URLs de imagem são absolutas
+          if (
+            frog.imageUrl &&
+            !frog.imageUrl.startsWith("http") &&
+            !frog.imageUrl.startsWith("data:")
+          ) {
+            // Se for uma URL relativa, converter para absoluta
+            frog.imageUrl = new URL(frog.imageUrl, window.location.origin).href;
+          }
+
+          // Verificar se a raridade tem todas as propriedades necessárias
+          if (!frog.class || !frog.color) {
+            const rarityObj = rarities.find((r) => r.name === frog.rarity);
+            if (rarityObj) {
+              frog.class = rarityObj.class;
+              frog.color = rarityObj.color;
+            }
+          }
+
+          return frog;
+        });
+
+        setFrogCollection(processedCollection);
+        setFrogCount(processedCollection.length);
+
+        // Salvar a coleção processada de volta para o localStorage
+        // para garantir que as URLs absolutas sejam mantidas
+        localStorage.setItem(
+          "frogCollection",
+          JSON.stringify(processedCollection)
+        );
       } catch (error) {
         console.error("Erro ao carregar a coleção:", error);
         setFrogCollection([]);
@@ -344,6 +376,7 @@ function App() {
     console.log("Tentando adicionar sapo à coleção:", {
       id: imageId,
       raridade: typeof rarity === "object" ? rarity.name : rarity,
+      imageUrl: imageUrl,
     });
 
     // Determinar o nome da raridade
@@ -376,9 +409,20 @@ function App() {
       }
     }
 
+    // Ensure the image URL is absolute (not relative)
+    let absoluteImageUrl = imageUrl;
+    if (
+      imageUrl &&
+      !imageUrl.startsWith("http") &&
+      !imageUrl.startsWith("data:")
+    ) {
+      // If it's a relative URL, convert to absolute
+      absoluteImageUrl = new URL(imageUrl, window.location.origin).href;
+    }
+
     // Add the frog to the collection with the provided data
     const newFrog = {
-      imageUrl: imageUrl,
+      imageUrl: absoluteImageUrl,
       imageId: imageId,
       rarity: rarityObject.name,
       class: rarityObject.class,
@@ -397,8 +441,9 @@ function App() {
       );
     } catch (error) {
       console.error("Erro ao salvar no localStorage:", error);
-      // Tentativa de fallback
+      // Tentativa de fallback - possível problema de tamanho do localStorage
       try {
+        // Limitar o tamanho da coleção para o fallback
         const limitedCollection = newCollection.slice(-100);
         localStorage.setItem(
           "frogCollection",

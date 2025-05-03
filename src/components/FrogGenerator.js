@@ -644,10 +644,10 @@ const FrogGenerator = ({
         </button>
         <button
           className={`earn-coins-btn ad ${isLimitReached ? "disabled" : ""}`}
-          onClick={() => earnCoins(9999)}
+          onClick={() => earnCoins(500)}
           disabled={isLimitReached}
         >
-          <span className="coin-icon-small">🪙</span> +9999 Aquilo hoje
+          <span className="coin-icon-small">🪙</span> +500 Aquilo hoje
         </button>
       </div>
 
